@@ -12,10 +12,10 @@ class Profile:
         return pd.date_range(start=start_datetime, end=end_datetime, freq='H', tz='Europe/Zurich')
 
     @staticmethod
-    def import_csv(file, sep=';'):
+    def import_csv(file, col_name='val',  sep=';'):
         """Imports a profile from csv file of type timestamp(hourly), values - no header - this returns a profile object"""
         # import the data from csv
-        profile = pd.read_csv(file, sep=sep, header=None, names=['ts','mw'])
+        profile = pd.read_csv(file, sep=sep, header=None, names=['ts', col_name])
 
         # generate a datetime index based on the timestamp from csv
         start = profile.iloc[0][0]
@@ -31,5 +31,17 @@ class Profile:
 
     def __init__(self, profile: pd.DataFrame):
         self.df_profile = profile
+        self.__peak_hours()
 
 
+    def __peak_hours(self):
+        #TODO implement the is_peak hour function - to get the peak hours of the given profile
+        pass
+
+    @staticmethod
+    def __is_peak_hour(hour):
+        pass
+
+    def slice_profile(self):
+        #TODO implement functionality to slice a profile to shorter duration
+        pass
