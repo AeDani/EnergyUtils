@@ -35,13 +35,14 @@ class Profile:
 
 
     def __peak_hours(self):
-        #TODO implement the is_peak hour function - to get the peak hours of the given profile
-        pass
 
-    @staticmethod
-    def __is_peak_hour(hour):
-        pass
+        def is_peak_hour(timestamp):
+            return ((timestamp.hour >= 8) & (timestamp.hour < 20)) & (timestamp.weekday < 5)
+
+        timestamps = self.df_profile.index.to_series()
+        self.df_profile['is_peak'] = timestamps.apply(is_peak_hour)
+
 
     def slice_profile(self):
-        #TODO implement functionality to slice a profile to shorter duration
+        #TODO implement functionality to slice a profile to shorter duration - check out pandas timeseries utils
         pass
