@@ -5,6 +5,12 @@ import matplotlib.pyplot as plt
 class Profile:
     """Profile class stores any type of profile in hourly frequency"""
 
+    def __init__(self, profile: pd.DataFrame, type='initial'):
+        self.df_profile = profile
+        self.type = type
+        self.__set_col_peak_hours()
+        self.__set_col_year_quarter_month()
+
     @staticmethod
     def create_timestamps(start_datetime: str, end_datetime: str):
         """From start to end the func returns a pandas DateTimeIndex in hourly frequency localized in Switzerland.
@@ -29,18 +35,12 @@ class Profile:
         profile.set_index('ts', inplace=True, drop=True)
         return Profile(profile)
 
-    def __init__(self, profile: pd.DataFrame, type='initial'):
-        self.df_profile = profile
-        self.type = type
-        self.__set_col_peak_hours()
-        self.__set_col_year_quarter_month()
-
     def __set_col_peak_hours(self):
         def is_peak_hour(timestamp):
             return ((timestamp.hour >= 8) & (timestamp.hour < 20)) & (timestamp.weekday < 5)
 
         timestamps = self.df_profile.index.to_series()
-        self.df_profile['is_peak'] = timestamps.apply(is_peak_hour).astype(bool)
+        self.df_profile.merge(timestamps.apply(is_peak_hour).astype('bool'), left_index=True, right_index=True)
 
     def __set_col_year_quarter_month(self):
         self.df_profile['year'] = self.df_profile.index.year
@@ -51,10 +51,8 @@ class Profile:
         # TODO implement functionality to slice a profile to shorter duration - check out pandas timeseries utils
         pass
 
-    def print_head(self, rows=5):
-        # print the first few rows of the profile
-        print(self.to_hedge_profile_obj.df_profile.head(rows))
-        print(self.to_hedge_profile_obj.df_profile.dtypes)
+    def display_head(self):
+        self.df_profile.head()
 
     def plot_profile(self):
         self.df_profile.plot(y='mw')
