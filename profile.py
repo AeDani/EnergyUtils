@@ -50,3 +50,8 @@ class Profile:
     def slice_profile(self):
         # TODO implement functionality to slice a profile to shorter duration - check out pandas timeseries utils
         pass
+
+    def print_head(self, rows=5):
+        # print the first few rows of the profile
+        print(self.to_hedge_profile_obj.df_profile.head(rows))
+        print(self.to_hedge_profile_obj.df_profile.dtypes)
