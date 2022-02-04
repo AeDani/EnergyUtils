@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 
 class Hours:
-    base = 'Base',
+    base = 'Base'
     peak = 'Peak'
     off_peak = 'Off-Peak'
 
@@ -24,15 +24,7 @@ class Hedging:
         """Calculate a quantity hedge base on the profile - product eg. 'Cal' and hours eg. 'Peak' """
         self.hedge_type = f'{product} {hour}'
         self.__hour_matcher(hour)
-
-        if product == Products.cal:
-            grouped_profile = self.to_hedge_profile_obj.df_profile.groupby('year')
-        elif product == Products.q:
-            grouped_profile = self.to_hedge_profile_obj.df_profile.groupby(['year', 'quarter'])
-        elif product == Products.m:
-            grouped_profile = self.to_hedge_profile_obj.df_profile.groupby(['year', 'month'])
-
-        self.hedge_products = grouped_profile['mw'].mean()
+        self.hedge_products = self.__product_grouper(product=product)['mw'].mean()
 
         # TODO Hedge as hourly profile
 
@@ -48,10 +40,22 @@ class Hedging:
         elif hour == Hours.peak:
             self.to_hedge_profile_obj.df_profile['hedge_hour'] = self.to_hedge_profile_obj.df_profile['is_peak']
 
+    def __product_grouper(self, product: Products):
+        """find the product hours matching the input and group the date accordingly"""
+        if product == Products.cal:
+            grouped_profile = self.to_hedge_profile_obj.df_profile.groupby(['hedge_hour','year'])
+        elif product == Products.q:
+            grouped_profile = self.to_hedge_profile_obj.df_profile.groupby(['hedge_hour','year', 'quarter'])
+        elif product == Products.m:
+            grouped_profile = self.to_hedge_profile_obj.df_profile.groupby(['hedge_hour','year', 'month'])
+
+        return grouped_profile
+
     def print_hedge(self):
         """print the hedging values to the console"""
         print(self.hedge_type)
-        print(self.hedge_products)
+        idx = self.hedge_products.index.get_level_values('hedge_hour')==True
+        print(self.hedge_products.loc[idx])
 
     def plot_hedge(self):
         """plot the hedging values to a bar plot"""

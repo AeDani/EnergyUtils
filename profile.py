@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 class Profile:
@@ -28,12 +29,11 @@ class Profile:
         profile.set_index('ts', inplace=True, drop=True)
         return Profile(profile)
 
-    def __init__(self, profile: pd.DataFrame, type= 'initial'):
+    def __init__(self, profile: pd.DataFrame, type='initial'):
         self.df_profile = profile
         self.type = type
         self.__set_col_peak_hours()
         self.__set_col_year_quarter_month()
-
 
     def __set_col_peak_hours(self):
         def is_peak_hour(timestamp):
@@ -55,3 +55,7 @@ class Profile:
         # print the first few rows of the profile
         print(self.to_hedge_profile_obj.df_profile.head(rows))
         print(self.to_hedge_profile_obj.df_profile.dtypes)
+
+    def plot_profile(self):
+        self.df_profile.plot(y='mw')
+        plt.show()
