@@ -14,12 +14,12 @@ hedge.print_hedge()
 #hedge.plot_hourly(True)
 
 
-##--- op nochmals hedgen
+# #--- op nochmals hedgen
 op = hedge.get_residual_as_profile()
 op_hd = hd.Hedging(op)
 op_hd.get_quantity_hedge(hd.Products.q, hd.Hours.base)
 op_hd.print_hedge()
-#hedge.plot_hedge()
+# hedge.plot_hedge()
 op_hd.plot_hourly(False)
 
 
