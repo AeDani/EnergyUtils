@@ -39,8 +39,8 @@ class Profile:
         def is_peak_hour(timestamp):
             return ((timestamp.hour >= 8) & (timestamp.hour < 20)) & (timestamp.weekday < 5)
 
-        timestamps = self.df_profile.index.to_series()
-        self.df_profile.merge(timestamps.apply(is_peak_hour).astype('bool'), left_index=True, right_index=True)
+        timestamps = self.df_profile.index.to_series(name='is_peak')
+        self.df_profile = self.df_profile.merge(timestamps.apply(is_peak_hour).astype('bool'), left_index=True, right_index=True)
 
     def __set_col_year_quarter_month(self):
         self.df_profile['year'] = self.df_profile.index.year

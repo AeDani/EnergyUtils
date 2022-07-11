@@ -1,3 +1,5 @@
+from email.mime import base
+from matplotlib.colors import NoNorm
 import numpy as np
 import pandas as pd
 
@@ -12,9 +14,11 @@ class Hours:
 
 
 class Products:
+    none = None
     cal = 'Cal'
     q = 'Quarter'
     m = 'Month'
+
 
 
 class Hedging:
@@ -23,7 +27,7 @@ class Hedging:
         self.hedge_products = None
         self.to_hedge_profile_obj = to_hedge_profile
 
-    def get_quantity_hedge(self, product=Products.cal, hour=Hours.base):
+    def calc_quantity_hedge(self, product=Products.cal, hour=Hours.base):
         """Calculate a quantity hedge base on the profile - product eg. 'Cal' and hours eg. 'Peak' """
         self.hedge_type = f'{product} {hour}'
         self.__hour_matcher(hour)
@@ -35,9 +39,38 @@ class Hedging:
         self.to_hedge_profile_obj.df_profile['hedge_mw'] = grouped_by_hedge_product.transform('mean')
         self.to_hedge_profile_obj.df_profile.loc[
             self.to_hedge_profile_obj.df_profile['hedge_hour'] == False, ['hedge_mw']] = np.NaN
-
+        
+        # store the hedge products
+        self.__hedge_per_product()
+        
         # calculation residual profil
         self.__calc_residual_profile()
+
+    def combinations_of_quantity_hedge(self, base_product:Products=Products.none, peak_product:Products=Products.none):
+        hedges = {
+            'base' : {},
+            'peak' : {}
+        }
+
+        # only base
+        if base_product and not peak_product:
+            self.calc_quantity_hedge(product=base_product, hour=Hours.base)
+            hedges['base'] = {}
+
+
+        # only peak
+        if not base_product and peak_product:
+            pass
+
+
+        # base and peak only q or cal
+     
+
+
+        # base and peak with different q or cal
+
+        return hedges
+
 
     def __hour_matcher(self, hour: Hours):
         """find the hours matching the input of hour"""
@@ -70,14 +103,18 @@ class Hedging:
         self.to_hedge_profile_obj.df_profile['residual'] = self.to_hedge_profile_obj.df_profile['mw'] - \
                                                            self.to_hedge_profile_obj.df_profile['hedge_mw']
 
-    def __readable_hedge_output(self):
-        return self.to_hedge_profile_obj.df_profile.groupby('hedge_group').mean()
+    def __hedge_per_product(self):
+        temp_df = self.to_hedge_profile_obj.df_profile.groupby('hedge_group').mean()
+        temp_df.reset_index(inplace=True)
+        self.hedge_products_out = temp_df[['hedge_group', 'hedge_mw']]
+
+    def hedge_df_to_dict(self): 
+        return self.__hedge_per_product().to_dict('list')
 
     def print_hedge(self):
         """print the hedging values to the console"""
         print(self.hedge_type)
-        out_df = self.__readable_hedge_output()
-        print(out_df['hedge_mw'])
+        print(self.hedge_products_out)
 
     def plot_hedge(self):
         """plot the hedging values to a bar plot"""
