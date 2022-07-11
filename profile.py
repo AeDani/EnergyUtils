@@ -48,7 +48,7 @@ class Profile:
         self.df_profile['month'] = self.df_profile.index.month
 
     def slice_profile(self):
-        # TODO implement functionality to slice a profile to shorter duration - check out pandas timeseries utils
+        #TODO implement functionality to slice a profile to shorter duration - check out pandas timeseries utils
         pass
 
     def display_head(self):
