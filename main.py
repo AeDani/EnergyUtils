@@ -23,7 +23,6 @@ op_hd.print_hedge()
 op_hd.plot_hourly(False)
 
 
-
 # import a fwc
 fwc = Profile.import_csv("Assets/fwc.csv", col_name='eur_mwh')
 # fwc.df_profile.plot()
