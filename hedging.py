@@ -30,7 +30,7 @@ class Hedging:
     def calc_quantity_hedge(self, product=Products.cal, hour=Hours.base):
         """Calculate a quantity hedge base on the profile - product eg. 'Cal' and hours eg. 'Peak' """
         self.hedge_type = f'{product} {hour}'
-        # define peak and off-peak hours
+        # find base or peak or off-peak hours according to hour input
         self.__hour_matcher(hour)
 
         # grouping df into the hours and products
@@ -56,51 +56,42 @@ class Hedging:
             'peak' : {}
         }
 
-        # only base in cal or q
+        # only base
         if base_product and not peak_product:
             self.calc_quantity_hedge(product=base_product, hour=Hours.base)
             hedges['base'] = self.__hedge_df_to_dict()
 
         # only peak
-        if not base_product and peak_product:
+        elif not base_product and peak_product:
             self.calc_quantity_hedge(product=peak_product, hour=Hours.peak)
             hedges['peak'] = self.__hedge_df_to_dict()
 
-        # base and peak but in the same period i.e. only q or cal
-        if base_product == peak_product:
+        # base and peak products
+        if base_product and peak_product:
             # the base hedge is set to the off-peak quantity
             off_peak_hedge_df = self.calc_quantity_hedge(product=base_product, hour=Hours.off_peak) 
             hedges['base'] = self.__hedge_df_to_dict()
-
-            # peak hedge is the calculated peak hedge minus the base hedge
+ 
+            # peak quantity calculation
             peak_hedge_df = self.calc_quantity_hedge(product=peak_product, hour=Hours.peak)
-            peak_hedge_df['hedge_mw'] = peak_hedge_df['hedge_mw'] -  off_peak_hedge_df['hedge_mw']
+
+            # same duration of products i.e both cal or both q
+            if base_product == peak_product:
+                # substract off_peak from peak 
+                peak_hedge_df['hedge_mw'] = peak_hedge_df['hedge_mw'] -  off_peak_hedge_df['hedge_mw']
+            
+            # base in cal and peak in q 
+            if base_product==Products.cal and peak_product==Products.q:
+                # peak hedges are the calculated peak hedges minus the cal base hedge
+                peak_hedge_df['hedge_mw'] = peak_hedge_df['hedge_mw'] -  off_peak_hedge_df['hedge_mw'][0]
+            
+            # base in q and peak in cal
+            if base_product==Products.q and peak_product==Products.cal:
+                # off-peak cal hedge needs to be calculated and then substracted from the cal peak quantity
+                off_peak_cal_hedge_df = self.calc_quantity_hedge(product=peak_product, hour=Hours.off_peak) # cal off-peak
+                peak_hedge_df['hedge_mw'] = peak_hedge_df['hedge_mw'] -  off_peak_cal_hedge_df['hedge_mw']
+            
             hedges['peak'] = peak_hedge_df.to_dict('list')
-
-
-        # base in cal and peak in q 
-        if base_product==Products.cal and peak_product==Products.q:
-            # the base hedge is set to the off-peak quantity
-            off_peak_hedge_df = self.calc_quantity_hedge(product=base_product, hour=Hours.off_peak) 
-            hedges['base'] = self.__hedge_df_to_dict()
-
-            # peak hedge is the calculated peak hedge minus the base hedge
-            peak_hedge_df = self.calc_quantity_hedge(product=peak_product, hour=Hours.peak)
-            peak_hedge_df['hedge_mw'] = peak_hedge_df['hedge_mw'] -  off_peak_hedge_df['hedge_mw'][0] ## identischer code wie base_product == peak_product: bis auf [0] das es im base nur ein cal produkt gibt
-            hedges['peak'] = peak_hedge_df.to_dict('list')
-
-        # base in q and peak in cal
-        if base_product==Products.q and peak_product==Products.cal:
-            # the base hedge is set to the off-peak quantity
-            off_peak_hedge_df = self.calc_quantity_hedge(product=base_product, hour=Hours.off_peak) 
-            hedges['base'] = self.__hedge_df_to_dict()
-
-             # peak hedge is the calculated peak hedge minus the base hedge in the cal
-            peak_hedge_df = self.calc_quantity_hedge(product=peak_product, hour=Hours.peak)
-            off_peak_cal_hedge_df = self.calc_quantity_hedge(product=peak_product, hour=Hours.off_peak) # cal off-peak
-            peak_hedge_df['hedge_mw'] = peak_hedge_df['hedge_mw'] -  off_peak_cal_hedge_df['hedge_mw'] ## identischer code wie base_product == peak_product: bis auf [0] das es im base nur ein cal produkt gibt
-            hedges['peak'] = peak_hedge_df.to_dict('list')
-
 
         return hedges
 
