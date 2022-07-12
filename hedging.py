@@ -172,9 +172,4 @@ class Hedging:
         return Profile(profile=self.to_hedge_profile_obj.df_profile['residual'].to_frame().rename(columns={'residual':'mw'}), type='residual')
 
 
-
-class HedgingCombinations():
-    def __init():
-        pass
-
     
