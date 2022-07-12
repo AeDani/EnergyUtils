@@ -24,12 +24,13 @@ class Products:
 class Hedging:
     def __init__(self, to_hedge_profile: Profile):
         self.hedge_type = ''
-        self.hedge_products = None
+        self.hedge_products_table = None
         self.to_hedge_profile_obj = to_hedge_profile
 
     def calc_quantity_hedge(self, product=Products.cal, hour=Hours.base):
         """Calculate a quantity hedge base on the profile - product eg. 'Cal' and hours eg. 'Peak' """
         self.hedge_type = f'{product} {hour}'
+        # define peak and off-peak hours
         self.__hour_matcher(hour)
 
         # grouping df into the hours and products
@@ -41,33 +42,65 @@ class Hedging:
             self.to_hedge_profile_obj.df_profile['hedge_hour'] == False, ['hedge_mw']] = np.NaN
         
         # store the hedge products
-        self.__hedge_per_product()
+        self.hedge_products_table = self.__hedge_per_product_table(product)
         
         # calculation residual profil
         self.__calc_residual_profile()
 
+        # return the hedge table as df
+        return self.hedge_products_table
+
     def combinations_of_quantity_hedge(self, base_product:Products=Products.none, peak_product:Products=Products.none):
-        hedges = {
+        hedges = { 
             'base' : {},
             'peak' : {}
         }
 
-        # only base
+        # only base in cal or q
         if base_product and not peak_product:
             self.calc_quantity_hedge(product=base_product, hour=Hours.base)
-            hedges['base'] = {}
-
+            hedges['base'] = self.__hedge_df_to_dict()
 
         # only peak
         if not base_product and peak_product:
-            pass
+            self.calc_quantity_hedge(product=peak_product, hour=Hours.peak)
+            hedges['peak'] = self.__hedge_df_to_dict()
+
+        # base and peak but in the same period i.e. only q or cal
+        if base_product == peak_product:
+            # the base hedge is set to the off-peak quantity
+            off_peak_hedge_df = self.calc_quantity_hedge(product=base_product, hour=Hours.off_peak) 
+            hedges['base'] = self.__hedge_df_to_dict()
+
+            # peak hedge is the calculated peak hedge minus the base hedge
+            peak_hedge_df = self.calc_quantity_hedge(product=peak_product, hour=Hours.peak)
+            peak_hedge_df['hedge_mw'] = peak_hedge_df['hedge_mw'] -  off_peak_hedge_df['hedge_mw']
+            hedges['peak'] = peak_hedge_df.to_dict('list')
 
 
-        # base and peak only q or cal
-     
+        # base in cal and peak in q 
+        if base_product==Products.cal and peak_product==Products.q:
+            # the base hedge is set to the off-peak quantity
+            off_peak_hedge_df = self.calc_quantity_hedge(product=base_product, hour=Hours.off_peak) 
+            hedges['base'] = self.__hedge_df_to_dict()
 
+            # peak hedge is the calculated peak hedge minus the base hedge
+            peak_hedge_df = self.calc_quantity_hedge(product=peak_product, hour=Hours.peak)
+            peak_hedge_df['hedge_mw'] = peak_hedge_df['hedge_mw'] -  off_peak_hedge_df['hedge_mw'][0] ## identischer code wie base_product == peak_product: bis auf [0] das es im base nur ein cal produkt gibt
+            hedges['peak'] = peak_hedge_df.to_dict('list')
 
-        # base and peak with different q or cal
+        # base in q and peak in cal
+        if base_product==Products.q and peak_product==Products.cal:
+            # the base hedge is set to the off-peak quantity
+            off_peak_hedge_df = self.calc_quantity_hedge(product=base_product, hour=Hours.off_peak) 
+            hedges['base'] = self.__hedge_df_to_dict()
+
+             # peak hedge is the calculated peak hedge minus the base hedge in the cal
+            peak_hedge_df = self.calc_quantity_hedge(product=peak_product, hour=Hours.peak)
+            off_peak_cal_hedge_df = self.calc_quantity_hedge(product=peak_product, hour=Hours.off_peak) # cal off-peak
+            peak_hedge_df['hedge_mw'] = peak_hedge_df['hedge_mw'] -  off_peak_cal_hedge_df['hedge_mw'] ## identischer code wie base_product == peak_product: bis auf [0] das es im base nur ein cal produkt gibt
+            hedges['peak'] = peak_hedge_df.to_dict('list')
+
 
         return hedges
 
@@ -103,18 +136,24 @@ class Hedging:
         self.to_hedge_profile_obj.df_profile['residual'] = self.to_hedge_profile_obj.df_profile['mw'] - \
                                                            self.to_hedge_profile_obj.df_profile['hedge_mw']
 
-    def __hedge_per_product(self):
+    def __hedge_per_product_table(self, product:Products):
         temp_df = self.to_hedge_profile_obj.df_profile.groupby('hedge_group').mean()
         temp_df.reset_index(inplace=True)
-        self.hedge_products_out = temp_df[['hedge_group', 'hedge_mw']]
+        
+        if  product==Products.cal:
+            temp_df['hedge_group'] = temp_df['hedge_group'].apply(lambda x: x.strftime('%F'))
+        elif product==Products.q:
+            temp_df['hedge_group'] = temp_df['hedge_group'].apply(lambda x: x.strftime('%F-Q%q'))
+        
+        return temp_df[['hedge_group', 'hedge_mw']]
 
-    def hedge_df_to_dict(self): 
-        return self.__hedge_per_product().to_dict('list')
+    def __hedge_df_to_dict(self): 
+        return self.hedge_products_table.to_dict('list')
 
     def print_hedge(self):
         """print the hedging values to the console"""
         print(self.hedge_type)
-        print(self.hedge_products_out)
+        print(self.hedge_products_table)
 
     def plot_hedge(self):
         """plot the hedging values to a bar plot"""
@@ -140,3 +179,11 @@ class Hedging:
 
     def get_residual_as_profile(self):
         return Profile(profile=self.to_hedge_profile_obj.df_profile['residual'].to_frame().rename(columns={'residual':'mw'}), type='residual')
+
+
+
+class HedgingCombinations():
+    def __init():
+        pass
+
+    
