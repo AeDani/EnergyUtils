@@ -3,21 +3,31 @@ import hedging as hd
 import pandas as pd
 import matplotlib.pyplot as plt
 
-
-#---- import of a profile
+# Profil erstellen
 evu25 = Profile.import_csv('Assets/evu-25.csv', col_name='mw')
+
+##--- initialer Hedge
 hedge = hd.Hedging(evu25)
+hedge.calc_quantity_hedge(hd.Products.cal, hd.Hours.base)
+hedge.print_hedge()
+hedge.calc_quantity_hedge(hd.Products.cal, hd.Hours.peak)
+hedge.print_hedge()
+hedge.calc_quantity_hedge(hd.Products.cal, hd.Hours.off_peak)
+hedge.print_hedge()
+#hedge.plot_hedge()
+#hedge.plot_hourly(True)
 
-# ##--- Nur Cal-Base Hedge
-# 
-# hedge.calc_quantity_hedge(hd.Products.cal, hd.Hours.base)
-# hedge.print_hedge()
 
-# ##--- Nur Q-Base Hedge
-# hedge = hd.Hedging(evu25)
-# hedge.calc_quantity_hedge(hd.Products.q, hd.Hours.base)
-# hedge.print_hedge()
+##--- op nochmals hedgen
+op = hedge.get_residual_as_profile()
+op_hd = hd.Hedging(op)
+op_hd.calc_quantity_hedge(hd.Products.q, hd.Hours.base)
+op_hd.print_hedge()
+# hedge.plot_hedge()
+op_hd.plot_hourly(False)
 
+
+##--------- Hedging Base-Peak Combinations
 
 ## only base
 a = hedge.combinations_of_quantity_hedge(base_product = hd.Products.cal)
