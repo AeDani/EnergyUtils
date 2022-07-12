@@ -56,7 +56,7 @@ class Profile:
         # returns base/peak/off-peak hours for Q's and Cal
         df = self.df_profile
         df['off_peak'] = ~df['is_peak']
-        return pd.pivot_table(df, index=['quarter'], values=['is_peak', 'off_peak'], aggfunc='sum',margins = True, margins_name='Total')
+        return pd.pivot_table(df, index=['quarter'], values=['is_peak', 'off_peak'], aggfunc='sum', margins = True, margins_name='Total')
 
 
     def display_head(self):
