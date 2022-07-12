@@ -42,14 +42,6 @@ class TestHedgingCombinationsBaseProfilEachQuarter(unittest.TestCase):
         result = Hedging(self.test_profile).combinations_of_quantity_hedge(peak_product=Products.q)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
-    def test_peak_q_only(self):
-        hedges = {
-            'base': {}, 
-            'peak': {'hedge_group': ['2025-Q1','2025-Q2','2025-Q3','2025-Q4'], 'hedge_mw': [1,2,3,4]}
-            }
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(peak_product=Products.q)
-        self.assertEqual(result,hedges, "Wrong hedge output")
-
     def test_base_peak_cal(self):
         hedges = {
             'base': {'hedge_group': ['2025'], 'hedge_mw': [2.507995735607676]}, 
@@ -64,6 +56,14 @@ class TestHedgingCombinationsBaseProfilEachQuarter(unittest.TestCase):
             'peak': {'hedge_group': ['2025-Q1','2025-Q2','2025-Q3','2025-Q4'], 'hedge_mw': [0,0,0,0]}
             }
         result = Hedging(self.test_profile).combinations_of_quantity_hedge(base_product = Products.q, peak_product=Products.q)
+        self.assertEqual(result,hedges, "Wrong hedge output")
+    
+    def test_base_cal_peak_q(self):
+        hedges = {
+            'base': {'hedge_group': ['2025'], 'hedge_mw': [2.507995735607676]}, 
+            'peak': {'hedge_group': ['2025-Q1','2025-Q2','2025-Q3','2025-Q4'], 'hedge_mw': [-1.5079957356076759, -0.5079957356076759, 0.49200426439232414, 1.4920042643923241]}
+            }
+        result = Hedging(self.test_profile).combinations_of_quantity_hedge(base_product = Products.cal, peak_product=Products.q)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
 
@@ -102,14 +102,6 @@ class TestHedgingCombinationsBasePeakProfil(unittest.TestCase):
     def test_peak_q_only(self):
         hedges = {
             'base': {}, 
-            'peak': {'hedge_group': ['2025-Q1','2025-Q2','2025-Q3','2025-Q4'], 'hedge_mw': [1,2,3,4]}
-            }
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(peak_product=Products.q)
-        self.assertEqual(result,hedges, "Wrong hedge output")
-
-    def test_peak_q_only(self):
-        hedges = {
-            'base': {}, 
             'peak': {'hedge_group': ['2025-Q1','2025-Q2','2025-Q3','2025-Q4'], 'hedge_mw': [11,12,13,14]}
             }
         result = Hedging(self.test_profile).combinations_of_quantity_hedge(peak_product=Products.q)
@@ -129,6 +121,14 @@ class TestHedgingCombinationsBasePeakProfil(unittest.TestCase):
             'peak': {'hedge_group': ['2025-Q1','2025-Q2','2025-Q3','2025-Q4'], 'hedge_mw': [10,10,10,10]}
             }
         result = Hedging(self.test_profile).combinations_of_quantity_hedge(base_product = Products.q, peak_product=Products.q)
+        self.assertEqual(result,hedges, "Wrong hedge output")
+
+    def test_base_cal_peak_q(self):
+        hedges = {
+            'base': {'hedge_group': ['2025'], 'hedge_mw': [2.507995735607676]}, 
+            'peak': {'hedge_group': ['2025-Q1','2025-Q2','2025-Q3','2025-Q4'], 'hedge_mw': [8.492004264392325, 9.492004264392325, 10.492004264392325, 11.492004264392325]}
+            }
+        result = Hedging(self.test_profile).combinations_of_quantity_hedge(base_product = Products.cal, peak_product=Products.q)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
 

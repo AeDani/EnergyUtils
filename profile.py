@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -50,6 +51,13 @@ class Profile:
     def slice_profile(self):
         #TODO implement functionality to slice a profile to shorter duration - check out pandas timeseries utils
         pass
+
+    def get_hours_table(self):
+        # returns base/peak/off-peak hours for Q's and Cal
+        df = self.df_profile
+        df['off_peak'] = ~df['is_peak']
+        return pd.pivot_table(df, index=['quarter'], values=['is_peak', 'off_peak'], aggfunc='sum',margins = True, margins_name='Total')
+
 
     def display_head(self):
         self.df_profile.head()
