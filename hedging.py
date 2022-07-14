@@ -92,6 +92,8 @@ class Hedging:
                 peak_hedge_df['hedge_mw'] = peak_hedge_df['hedge_mw'] -  off_peak_cal_hedge_df['hedge_mw']
             
             hedges['peak'] = peak_hedge_df.to_dict('list')
+            #to_dict rounds with an error and changes datatyp
+            hedges['peak']['hedge_mw'] = [round(el,4) for el in hedges['peak']['hedge_mw']]
 
         return hedges
 
@@ -136,7 +138,7 @@ class Hedging:
         elif product==Products.q:
             temp_df['hedge_group'] = temp_df['hedge_group'].apply(lambda x: x.strftime('%F-Q%q'))
         
-        return temp_df[['hedge_group', 'hedge_mw']]
+        return temp_df[['hedge_group', 'hedge_mw']].round({'hedge_mw' : 4})
 
     def __hedge_df_to_dict(self): 
         return self.hedge_products_table.to_dict('list')
