@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 
 # Profil erstellen
 evu25 = Profile.import_csv('Assets/evu-25.csv', col_name='mw')
+# Stundentabelle Peak / off Peak erhalten
+print(evu25.get_hours_table())
 
 ##--- initialer Hedge
 hedge = hd.Hedging(evu25)
