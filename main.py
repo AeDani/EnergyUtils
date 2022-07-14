@@ -3,6 +3,8 @@ import hedging as hd
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# File with different examples how to use Profile and Hedging Class
+
 # Profil erstellen
 evu25 = Profile.import_csv('Assets/evu-25.csv', col_name='mw')
 # Stundentabelle Peak / off Peak erhalten
