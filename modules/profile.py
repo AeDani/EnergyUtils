@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-class Profile:
+class HourProfile:
     """Profile class stores any type of profile in hourly frequency"""
 
     def __init__(self, profile: pd.DataFrame, type='initial'):
@@ -28,13 +28,13 @@ class Profile:
         # generate a datetime index based on the timestamp from csv
         start = profile.iloc[0][0]
         end = profile.iloc[-1][0]
-        dtix = Profile.create_timestamps(start, end)
+        dtix = HourProfile.create_timestamps(start, end)
 
         # return profile object
         profile.drop(columns=['ts'], inplace=True)
         profile['ts'] = dtix
         profile.set_index('ts', inplace=True, drop=True)
-        return Profile(profile)
+        return HourProfile(profile)
 
     def __set_col_peak_hours(self):
         def is_peak_hour(timestamp):

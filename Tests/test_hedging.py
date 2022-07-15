@@ -1,11 +1,11 @@
 import unittest
-from profile import *
-from hedging import *
+from modules.profile import *
+from modules.hedging import *
 
 
 class TestHedgingCombinationsAllOnesProfile(unittest.TestCase):
     def setUp(self) -> None:
-        self.test_profile = Profile.import_csv('Tests/all_ones.csv', col_name='mw')
+        self.test_profile = HourProfile.import_csv('Tests/all_ones.csv', col_name='mw')
     
     def dummy_test(self):
         self.assertEqual(sum([1,2,3]),6, "Should be 6")
@@ -70,7 +70,7 @@ class TestHedgingCombinationsAllOnesProfile(unittest.TestCase):
 
 class TestHedgingCombinationsBaseProfilEachQuarter(unittest.TestCase):
     def setUp(self) -> None:
-        self.test_profile = Profile.import_csv('Tests/base_per_quarter.csv', col_name='mw')
+        self.test_profile = HourProfile.import_csv('Tests/base_per_quarter.csv', col_name='mw')
     
     def dummy_test(self):
         self.assertEqual(sum([1,2,3]),6, "Should be 6")
@@ -135,7 +135,7 @@ class TestHedgingCombinationsBaseProfilEachQuarter(unittest.TestCase):
 
 class TestHedgingCombinationsBasePeakProfil(unittest.TestCase):
     def setUp(self) -> None:
-        self.test_profile = Profile.import_csv('Tests/peak_off_peak_per_quarter.csv', col_name='mw')
+        self.test_profile = HourProfile.import_csv('Tests/peak_off_peak_per_quarter.csv', col_name='mw')
     
     def dummy_test(self):
         self.assertEqual(sum([1,2,3]),6, "Should be 6")

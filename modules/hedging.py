@@ -1,9 +1,8 @@
-from email.mime import base
 from matplotlib.colors import NoNorm
 import numpy as np
 import pandas as pd
 
-from profile import Profile
+from modules.profile import HourProfile
 import matplotlib.pyplot as plt
 
 
@@ -22,7 +21,7 @@ class Products:
 
 
 class Hedging:
-    def __init__(self, to_hedge_profile: Profile):
+    def __init__(self, to_hedge_profile: HourProfile):
         self.hedge_type = ''
         self.hedge_products_table = None
         self.to_hedge_profile_obj = to_hedge_profile
@@ -171,7 +170,10 @@ class Hedging:
         plt.show()
 
     def get_residual_as_profile(self):
-        return Profile(profile=self.to_hedge_profile_obj.df_profile['residual'].to_frame().rename(columns={'residual':'mw'}), type='residual')
+        return HourProfile(profile=self.to_hedge_profile_obj.df_profile['residual'].to_frame().rename(columns={'residual':'mw'}), type='residual')
+
+    def get_mwh_of_residual_profile(self):
+        return self.to_hedge_profile_obj.df_profile['residual'].sum()
 
 
     
