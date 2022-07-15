@@ -39,6 +39,8 @@ class Hedging:
         self.to_hedge_profile_obj.df_profile['hedge_mw'] = grouped_by_hedge_product.transform('mean')
         self.to_hedge_profile_obj.df_profile.loc[
             self.to_hedge_profile_obj.df_profile['hedge_hour'] == False, ['hedge_mw']] = np.NaN
+
+        self.to_hedge_profile_obj.df_profile['hedge_mw_non_nan'] = self.to_hedge_profile_obj.df_profile['hedge_mw'].fillna(0)
         
         # store the hedge products
         self.hedge_products_table = self.__hedge_per_product_table(product)
@@ -125,8 +127,12 @@ class Hedging:
         return grouped_profile
 
     def __calc_residual_profile(self):
-        self.to_hedge_profile_obj.df_profile['residual'] = self.to_hedge_profile_obj.df_profile['mw'] - \
-                                                           self.to_hedge_profile_obj.df_profile['hedge_mw']
+        if 'residual' in self.to_hedge_profile_obj.df_profile:
+            self.to_hedge_profile_obj.df_profile['residual'] = self.to_hedge_profile_obj.df_profile['residual'] - \
+                                                           self.to_hedge_profile_obj.df_profile['hedge_mw_non_nan']
+        else:
+            self.to_hedge_profile_obj.df_profile['residual'] = self.to_hedge_profile_obj.df_profile['mw'] - \
+                                                           self.to_hedge_profile_obj.df_profile['hedge_mw_non_nan']
 
     def __hedge_per_product_table(self, product:Products):
         temp_df = self.to_hedge_profile_obj.df_profile.groupby('hedge_group').mean()
@@ -173,7 +179,11 @@ class Hedging:
         return HourProfile(profile=self.to_hedge_profile_obj.df_profile['residual'].to_frame().rename(columns={'residual':'mw'}), type='residual')
 
     def get_mwh_of_residual_profile(self):
-        return self.to_hedge_profile_obj.df_profile['residual'].sum()
+        return {
+            'total_mwh':self.to_hedge_profile_obj.df_profile['residual'].sum(),
+            'pos_mwh':self.to_hedge_profile_obj.df_profile['residual'][self.to_hedge_profile_obj.df_profile['residual']>0].sum(),
+            'neg_mwh':self.to_hedge_profile_obj.df_profile['residual'][self.to_hedge_profile_obj.df_profile['residual']<0].sum()
+        }
 
 
     
