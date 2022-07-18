@@ -34,7 +34,7 @@ class Hedging:
         
         # initialies a onw list entry with all the relevant timeseries for the upcoming hedge.
         self.hedge_product.append(f'{product} {hour}')
-        profile = self.to_hedge_profile_obj
+        profile = self.to_hedge_profile_obj.df_profile.copy()
 
         # find base or peak or off-peak hours according to hour input
         profile = self.__hour_matcher(profile=profile, hour=hour)
@@ -46,10 +46,10 @@ class Hedging:
         profile = self.__to_period_on_index(profile=profile, product=product)
 
         # calculate and assign every hour with the hedge product value
-        profile.df_profile['hedge_mw'] = grouped_by_hedge_product.transform('mean')
-        profile.df_profile.loc[profile.df_profile['hedge_hour'] == False, ['hedge_mw']] = np.NaN
+        profile['hedge_mw'] = grouped_by_hedge_product.transform('mean')
+        profile.loc[profile['hedge_hour'] == False, ['hedge_mw']] = np.NaN
 
-        profile.df_profile['hedge_mw_non_nan'] = profile.df_profile['hedge_mw'].fillna(0)
+        profile['hedge_mw_non_nan'] = profile['hedge_mw'].fillna(0)
         
         # store the hedge products
         self.hedge_products_table.append(self.__hedge_per_product_table(profile=profile, product=product))
@@ -61,7 +61,7 @@ class Hedging:
         self.hedge_timeseries_df.append(profile)
 
         # return the hedge table as df
-        return self.hedge_products_table
+        return self.hedge_products_table[-1]
 
     def combinations_of_quantity_hedge(self, base_product:Products=Products.none, peak_product:Products=Products.none):
         hedges = { 
@@ -72,18 +72,18 @@ class Hedging:
         # only base
         if base_product and not peak_product:
             self.calc_quantity_hedge(product=base_product, hour=Hours.base)
-            hedges['base'] = self.__hedge_df_to_dict()
+            hedges['base'] = self.__hedge_df_to_dict(self.hedge_products_table[-1])
 
         # only peak
         elif not base_product and peak_product:
             self.calc_quantity_hedge(product=peak_product, hour=Hours.peak)
-            hedges['peak'] = self.__hedge_df_to_dict()
+            hedges['peak'] = self.__hedge_df_to_dict(self.hedge_products_table[-1])
 
         # base and peak products
         if base_product and peak_product:
             # the base hedge is set to the off-peak quantity
             off_peak_hedge_df = self.calc_quantity_hedge(product=base_product, hour=Hours.off_peak) 
-            hedges['base'] = self.__hedge_df_to_dict()
+            hedges['base'] = self.__hedge_df_to_dict(self.hedge_products_table[-1])
  
             # peak quantity calculation
             peak_hedge_df = self.calc_quantity_hedge(product=peak_product, hour=Hours.peak)
@@ -111,49 +111,50 @@ class Hedging:
         return hedges
 
     @staticmethod
-    def __hour_matcher(profile:HourProfile, hour: Hours):
+    def __hour_matcher(profile:pd.DataFrame, hour: Hours):
         """find the hours matching the input of hour"""
         if hour == Hours.base:
-            profile.df_profile['hedge_hour'] = True
+            profile['hedge_hour'] = True
         elif hour == Hours.off_peak:
-            profile.df_profile['hedge_hour'] = profile.df_profile['is_peak'] \
+            profile['hedge_hour'] = profile['is_peak'] \
                 .map({True: False, False: True})
         elif hour == Hours.peak:
-            profile.df_profile['hedge_hour'] = profile.df_profile['is_peak']
+            profile['hedge_hour'] = profile['is_peak']
         return profile
 
     @staticmethod
-    def __product_grouper(profile:HourProfile, product: Products):
+    def __product_grouper(profile:pd.DataFrame, product: Products):
         """find the product hours matching the input and group the date accordingly"""
         if product == Products.cal:
-            grouped_profile = profile.df_profile.groupby(['hedge_hour', 'year'])
+            grouped_profile = profile.groupby(['hedge_hour', 'year'])
         elif product == Products.q:
-            grouped_profile = profile.df_profile.groupby(['hedge_hour', 'year', 'quarter'])
+            grouped_profile = profile.groupby(['hedge_hour', 'year', 'quarter'])
         elif product == Products.m:
-            grouped_profile = profile.df_profile.groupby(['hedge_hour', 'year', 'month'])
+            grouped_profile = profile.groupby(['hedge_hour', 'year', 'month'])
 
         return grouped_profile['mw']
 
     @staticmethod
-    def __to_period_on_index(profile:HourProfile, product: Products):
+    def __to_period_on_index(profile:pd.DataFrame, product: Products):
              
         if product == Products.cal:
-            profile.df_profile['hedge_group'] = profile.df_profile.index.to_period('Y')
+            profile['hedge_group'] = profile.index.to_period('Y')
         elif product == Products.q:
-            profile.df_profile['hedge_group'] = profile.df_profile.index.to_period('Q')
+            profile['hedge_group'] = profile.index.to_period('Q')
         elif product == Products.m:
-           profile.df_profile['hedge_group'] = profile.df_profile.index.to_period(
+           profile['hedge_group'] = profile.index.to_period(
                 'M')
         
         return profile
 
     @staticmethod
-    def __calc_residual_profile(profile:HourProfile):
-        profile.df_profile['residual'] = profile.df_profile['mw'] - profile.df_profile['hedge_mw_non_nan']
+    def __calc_residual_profile(profile:pd.DataFrame):
+        profile['residual'] = profile['mw'] - profile['hedge_mw_non_nan']
+        return profile
 
     @staticmethod
-    def __hedge_per_product_table(profile:HourProfile, product:Products):
-        temp_df = profile.df_profile.groupby('hedge_group').mean()
+    def __hedge_per_product_table(profile:pd.DataFrame, product:Products):
+        temp_df = profile.groupby('hedge_group').mean()
         temp_df.reset_index(inplace=True)
         
         if  product==Products.cal:
@@ -163,8 +164,8 @@ class Hedging:
         
         return temp_df[['hedge_group', 'hedge_mw']].round({'hedge_mw' : 4})
 
-    def __hedge_df_to_dict(self): 
-        return self.hedge_products_table.to_dict('list')
+    def __hedge_df_to_dict(self, hedge_products_table): 
+        return hedge_products_table.to_dict('list')
 
     def print_hedge(self):
         """print the hedging values to the console"""
