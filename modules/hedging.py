@@ -1,3 +1,4 @@
+import profile
 from matplotlib.colors import NoNorm
 import numpy as np
 import pandas as pd
@@ -23,30 +24,41 @@ class Products:
 class Hedging:
     def __init__(self, to_hedge_profile: HourProfile):
         self.hedge_type = ''
-        self.hedge_products_table = None
         self.to_hedge_profile_obj = to_hedge_profile
+        self.hedge_products_table = []
+        self.hedge_timeseries_df = []
+        self.hedge_product = []
 
     def calc_quantity_hedge(self, product=Products.cal, hour=Hours.base):
         """Calculate a quantity hedge base on the profile - product eg. 'Cal' and hours eg. 'Peak' """
-        self.hedge_type = f'{product} {hour}'
+        
+        # initialies a onw list entry with all the relevant timeseries for the upcoming hedge.
+        self.hedge_product.append(f'{product} {hour}')
+        profile = self.to_hedge_profile_obj
+
         # find base or peak or off-peak hours according to hour input
-        self.__hour_matcher(hour)
+        profile = self.__hour_matcher(profile=profile, hour=hour)
 
         # grouping df into the hours and products
-        grouped_by_hedge_product = self.__product_grouper(product=product)['mw']
+        grouped_by_hedge_product = self.__product_grouper(profile=profile, product=product)
+
+        # adjust index to cal,q or m
+        profile = self.__to_period_on_index(profile=profile, product=product)
 
         # calculate and assign every hour with the hedge product value
-        self.to_hedge_profile_obj.df_profile['hedge_mw'] = grouped_by_hedge_product.transform('mean')
-        self.to_hedge_profile_obj.df_profile.loc[
-            self.to_hedge_profile_obj.df_profile['hedge_hour'] == False, ['hedge_mw']] = np.NaN
+        profile.df_profile['hedge_mw'] = grouped_by_hedge_product.transform('mean')
+        profile.df_profile.loc[profile.df_profile['hedge_hour'] == False, ['hedge_mw']] = np.NaN
 
-        self.to_hedge_profile_obj.df_profile['hedge_mw_non_nan'] = self.to_hedge_profile_obj.df_profile['hedge_mw'].fillna(0)
+        profile.df_profile['hedge_mw_non_nan'] = profile.df_profile['hedge_mw'].fillna(0)
         
         # store the hedge products
-        self.hedge_products_table = self.__hedge_per_product_table(product)
+        self.hedge_products_table.append(self.__hedge_per_product_table(profile=profile, product=product))
         
         # calculation residual profil
-        self.__calc_residual_profile()
+        profile = self.__calc_residual_profile(profile=profile)
+
+        # store the timeseries df
+        self.hedge_timeseries_df.append(profile)
 
         # return the hedge table as df
         return self.hedge_products_table
@@ -98,44 +110,50 @@ class Hedging:
 
         return hedges
 
-
-    def __hour_matcher(self, hour: Hours):
+    @staticmethod
+    def __hour_matcher(profile:HourProfile, hour: Hours):
         """find the hours matching the input of hour"""
         if hour == Hours.base:
-            self.to_hedge_profile_obj.df_profile['hedge_hour'] = True
+            profile.df_profile['hedge_hour'] = True
         elif hour == Hours.off_peak:
-            self.to_hedge_profile_obj.df_profile['hedge_hour'] = self.to_hedge_profile_obj.df_profile['is_peak'] \
+            profile.df_profile['hedge_hour'] = profile.df_profile['is_peak'] \
                 .map({True: False, False: True})
         elif hour == Hours.peak:
-            self.to_hedge_profile_obj.df_profile['hedge_hour'] = self.to_hedge_profile_obj.df_profile['is_peak']
+            profile.df_profile['hedge_hour'] = profile.df_profile['is_peak']
+        return profile
 
-    def __product_grouper(self, product: Products):
+    @staticmethod
+    def __product_grouper(profile:HourProfile, product: Products):
         """find the product hours matching the input and group the date accordingly"""
         if product == Products.cal:
-            grouped_profile = self.to_hedge_profile_obj.df_profile.groupby(['hedge_hour', 'year'])
-            self.to_hedge_profile_obj.df_profile['hedge_group'] = self.to_hedge_profile_obj.df_profile.index.to_period(
-                'Y')
+            grouped_profile = profile.df_profile.groupby(['hedge_hour', 'year'])
         elif product == Products.q:
-            grouped_profile = self.to_hedge_profile_obj.df_profile.groupby(['hedge_hour', 'year', 'quarter'])
-            self.to_hedge_profile_obj.df_profile['hedge_group'] = self.to_hedge_profile_obj.df_profile.index.to_period(
-                'Q')
+            grouped_profile = profile.df_profile.groupby(['hedge_hour', 'year', 'quarter'])
         elif product == Products.m:
-            grouped_profile = self.to_hedge_profile_obj.df_profile.groupby(['hedge_hour', 'year', 'month'])
-            self.to_hedge_profile_obj.df_profile['hedge_group'] = self.to_hedge_profile_obj.df_profile.index.to_period(
+            grouped_profile = profile.df_profile.groupby(['hedge_hour', 'year', 'month'])
+
+        return grouped_profile['mw']
+
+    @staticmethod
+    def __to_period_on_index(profile:HourProfile, product: Products):
+             
+        if product == Products.cal:
+            profile.df_profile['hedge_group'] = profile.df_profile.index.to_period('Y')
+        elif product == Products.q:
+            profile.df_profile['hedge_group'] = profile.df_profile.index.to_period('Q')
+        elif product == Products.m:
+           profile.df_profile['hedge_group'] = profile.df_profile.index.to_period(
                 'M')
+        
+        return profile
 
-        return grouped_profile
+    @staticmethod
+    def __calc_residual_profile(profile:HourProfile):
+        profile.df_profile['residual'] = profile.df_profile['mw'] - profile.df_profile['hedge_mw_non_nan']
 
-    def __calc_residual_profile(self):
-        if 'residual' in self.to_hedge_profile_obj.df_profile:
-            self.to_hedge_profile_obj.df_profile['residual'] = self.to_hedge_profile_obj.df_profile['residual'] - \
-                                                           self.to_hedge_profile_obj.df_profile['hedge_mw_non_nan']
-        else:
-            self.to_hedge_profile_obj.df_profile['residual'] = self.to_hedge_profile_obj.df_profile['mw'] - \
-                                                           self.to_hedge_profile_obj.df_profile['hedge_mw_non_nan']
-
-    def __hedge_per_product_table(self, product:Products):
-        temp_df = self.to_hedge_profile_obj.df_profile.groupby('hedge_group').mean()
+    @staticmethod
+    def __hedge_per_product_table(profile:HourProfile, product:Products):
+        temp_df = profile.df_profile.groupby('hedge_group').mean()
         temp_df.reset_index(inplace=True)
         
         if  product==Products.cal:
