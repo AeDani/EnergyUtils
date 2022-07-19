@@ -23,12 +23,11 @@ class Products:
 
 class Hedging:
     def __init__(self, to_hedge_profile: HourProfile):
-        self.hedge_type = ''
         self.to_hedge_profile_obj = to_hedge_profile
+        self.hedge_product = []
         self.hedge_products_table = []
         self.hedge_timeseries_df = []
-        self.hedge_product = []
-
+        
     def calc_quantity_hedge(self, product=Products.cal, hour=Hours.base):
         """Calculate a quantity hedge base on the profile - product eg. 'Cal' and hours eg. 'Peak' """
         
