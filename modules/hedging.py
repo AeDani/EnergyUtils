@@ -20,7 +20,6 @@ class Products:
     m = 'Month'
 
 
-
 class Hedging:
     def __init__(self, to_hedge_profile: HourProfile):
         self.to_hedge_profile_obj = to_hedge_profile
@@ -46,8 +45,9 @@ class Hedging:
 
         # calculate and assign every hour with the hedge product value
         profile['hedge_mw'] = grouped_by_hedge_product.transform('mean')
+        # write nan on the hours not included in the hedge
         profile.loc[profile['hedge_hour'] == False, ['hedge_mw']] = np.NaN
-
+        # create another column with 0 instead of nan, to better caclulate later
         profile['hedge_mw_non_nan'] = profile['hedge_mw'].fillna(0)
         
         # store the hedge products
@@ -63,7 +63,7 @@ class Hedging:
         return self.hedge_products_table[-1]
 
     def combinations_of_quantity_hedge(self, base_product:Products=Products.none, peak_product:Products=Products.none):
-        hedges = { 
+        hedges = {
             'base' : {},
             'peak' : {}
         }
@@ -81,7 +81,7 @@ class Hedging:
         # base and peak products
         if base_product and peak_product:
             # the base hedge is set to the off-peak quantity
-            off_peak_hedge_df = self.calc_quantity_hedge(product=base_product, hour=Hours.off_peak) 
+            off_peak_hedge_df = self.calc_quantity_hedge(product=base_product, hour=Hours.off_peak)
             hedges['base'] = self.__hedge_df_to_dict(self.hedge_products_table[-1])
  
             # peak quantity calculation
@@ -193,6 +193,16 @@ class Hedging:
             plt.legend(['Profil', self.hedge_type])
         plt.show()
 
-#TODO Hedge Dict und Profil umrechnen in ein Residualprofil
+    def calc_residual_with_hedges(self,hedges, profile):
+        """Calculate the hourly residual profile based on an hedges object and return a HourProfile"""
 
+        # generate timestamp
+     
+        HourProfile.create_timestamps()
+
+        # generate hedges as profile
+
+
+        # calcualte residual profile based on hedges an profile input
+        
     
