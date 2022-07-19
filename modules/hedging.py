@@ -194,15 +194,6 @@ class Hedging:
             plt.legend(['Profil', self.hedge_type])
         plt.show()
 
-    def get_residual_as_profile(self):
-        return HourProfile(profile=self.to_hedge_profile_obj.df_profile['residual'].to_frame().rename(columns={'residual':'mw'}), type='residual')
-
-    def get_mwh_of_residual_profile(self):
-        return {
-            'total_mwh':self.to_hedge_profile_obj.df_profile['residual'].sum(),
-            'pos_mwh':self.to_hedge_profile_obj.df_profile['residual'][self.to_hedge_profile_obj.df_profile['residual']>0].sum(),
-            'neg_mwh':self.to_hedge_profile_obj.df_profile['residual'][self.to_hedge_profile_obj.df_profile['residual']<0].sum()
-        }
-
+#TODO Hedge Dict und Profil umrechnen in ein Residualprofil
 
     
