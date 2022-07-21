@@ -65,8 +65,9 @@ class Hedging:
         # base and peak products
         if base_product and peak_product:
             # the base hedge is set to the off-peak quantity
-            hedges_off_peak = self.calc_quantity_hedges(product=base_product, hour=Hours.off_peak)
-            hedges_base = [hedge.change_type(Hours.base) for hedge in hedges_off_peak]
+            hedges_base = self.calc_quantity_hedges(product=base_product, hour=Hours.off_peak)
+            for hedge in hedges_base:
+                hedge.change_type(Hours.base) 
             hedges_list_combinations.extend(hedges_base)
  
             # peak quantity calculation
@@ -84,7 +85,7 @@ class Hedging:
                     # peak hedges are the calculated peak hedges minus the cal base hedge
                     hedge_peak.change_mw(hedge_peak.trading_product_minus_other(hedges_base[0]))
 
-            hedges_list_combinations.extend(hedge_peak)
+            hedges_list_combinations.extend(hedges_peak)
 
         return hedges_list_combinations
 
@@ -144,7 +145,7 @@ class Hedging:
 
             out_list.append(TradingProduct(
                 type=hour, 
-                mw=group['hedge_mw'].mean().round(2), 
+                mw=group['hedge_mw'].mean().round(2), # round to 2 digits 
                 start=group['start'].iloc[0].strftime('%Y-%m-%d %H:00'), 
                 end= group['end'].iloc[0].strftime('%Y-%m-%d %H:00')))
         return out_list
@@ -161,3 +162,7 @@ class Hedging:
             temp_df['hedge_group'] = temp_df['hedge_group'].apply(lambda x: x.strftime('%F-Q%q'))
         
         return temp_df[['hedge_group', 'hedge_mw', 'start', 'end']].round({'hedge_mw' : 4})
+
+    def print_hedges(self):
+        for hedge in self.hedge_products_list:
+            print(hedge)

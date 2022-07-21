@@ -25,7 +25,7 @@ class TradingProduct():
         self.info['mw'] = mw
 
     def trading_product_minus_other(self, other):
-        return self.info['mw'] - other.info['mw']
+        return (self.info['mw'] - other.info['mw']).round(2)
 
     def generateProfile(self):
         ts = pd.date_range(start=self.info['start'], end=self.info['end'], freq='H', tz='Europe/Zurich')

@@ -18,7 +18,6 @@ hedge = Hedging(evu25)
 
 a = hedge.combinations_of_quantity_hedge(base_product= Products.cal)
 for hedge in a:
-    
     print(hedge)
     print(hedge.get_mwh())
 
