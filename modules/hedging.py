@@ -161,8 +161,13 @@ class Hedging:
         list_of_df = []
         for trading_product in self.hedge_products_list:
             list_of_df.append(trading_product.generateProfile().df_profile)
-        concated = pd.concat(list_of_df, axis=1)
-        summed_hedge_profile = concated['mw'].sum(axis=1)
+            concated = pd.concat(list_of_df, axis=1)
+        
+        if len(self.hedge_products_list) >1:
+            summed_hedge_profile = concated['mw'].sum(axis=1)
+        else:
+            summed_hedge_profile = concated['mw']
+
         res = (self.to_hedge_profile_obj.df_profile['mw'] - summed_hedge_profile).to_frame(name='mw')
         pos = res['mw'] > 0
         
@@ -171,7 +176,7 @@ class Hedging:
         
         res['neg'] = res['mw']
         res['neg'].loc[pos] = 0
-        res['neg'].abs()
+        res['neg'] = res['neg'].abs()
 
         return (
             HourProfile(profile=res['mw'].to_frame('mw'), type='residual_all'),
@@ -182,8 +187,9 @@ class Hedging:
     def print_all_mwh_of_residual(self):
         res_profiles = self.initial_profile_minus_all_hedges()
         for pro in res_profiles:
-            print(f'{pro.type} with {pro.get_sum_of_profile()} Mwh')          
+            print(f'{pro.type} with {pro.get_sum_of_profile()} Mwh')
 
     def print_hedges(self):
-        for hedge in self.hedge_products_list:
-            print(hedge)
+        for trading_prod in self.hedge_products_list:
+            print(trading_prod)
+            

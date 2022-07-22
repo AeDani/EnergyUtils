@@ -45,7 +45,9 @@ class TradingProduct():
         return profile.df_profile['mw'].sum().round(3)
 
     def __str__(self) -> str:
-        return json.dumps(self.info)
+        out = self.info
+        out['mwh'] = self.get_mwh()
+        return json.dumps(out)
 
     def __eq__(self, other):
         return self.info == other.info
