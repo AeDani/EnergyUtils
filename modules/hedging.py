@@ -8,7 +8,8 @@ from modules.tradingProduct import TradingProduct
 
 class Hedging:
     def __init__(self, to_hedge_profile: HourProfile):
-        self.to_hedge_profile_obj = to_hedge_profile
+        self.initial_hourProfile = to_hedge_profile
+        self.__rename_val_col_to_mw()
         self.hedge_product_selection = []
         self.hedge_products_list = []
         self.hedge_timeseries_df = []
@@ -18,7 +19,7 @@ class Hedging:
         
         # initialies a onw list entry with all the relevant timeseries for the upcoming hedge.
         self.hedge_product_selection.append(f'{product} {hour}')
-        profile = self.to_hedge_profile_obj.df_profile.copy()
+        profile = self.initial_hourProfile.df_profile.copy()
 
         # find base or peak or off-peak hours according to hour input
         profile = self.__hour_matcher(profile=profile, hour=hour)
@@ -168,7 +169,7 @@ class Hedging:
         else:
             summed_hedge_profile = concated['mw']
 
-        res = (self.to_hedge_profile_obj.df_profile['mw'] - summed_hedge_profile).to_frame(name='mw')
+        res = (self.initial_hourProfile.df_profile['mw'] - summed_hedge_profile).to_frame(name='mw')
         pos = res['mw'] > 0
         
         res['pos'] = res['mw']
@@ -179,9 +180,9 @@ class Hedging:
         res['neg'] = res['neg'].abs()
 
         return (
-            HourProfile(profile=res['mw'].to_frame('mw'), type='residual_all'),
-            HourProfile(profile=res['pos'].to_frame('mw'), type='residual_pos'),
-            HourProfile(profile=res['neg'].to_frame('mw'), type='residual_neg'),
+            HourProfile(profile=res['mw'], name_val=Values.mw, type='residual_all'),
+            HourProfile(profile=res['pos'], name_val=Values.mw, type='residual_pos'),
+            HourProfile(profile=res['neg'], name_val=Values.mw, type='residual_neg'),
         )
 
     def print_all_mwh_of_residual(self):
@@ -197,3 +198,10 @@ class Hedging:
         self.hedge_product_selection = []
         self.hedge_products_list = []
         self.hedge_timeseries_df = []
+
+    def __rename_val_col_to_mw(self):
+        rename = {
+            self.initial_hourProfile.name_val : 'mw'
+        }
+        self.initial_hourProfile.df_profile.rename(columns=rename, inplace=True)
+        self.initial_hourProfile.name_val = 'mw'

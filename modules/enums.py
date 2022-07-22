@@ -9,3 +9,6 @@ class Products:
     cal = 'Cal'
     q = 'Quarter'
     m = 'Month'
+
+class Values:
+    mw = 'mw'

@@ -37,8 +37,8 @@ class TradingProduct():
             df.loc[df['is_peak']== False,'mw'] = 0
         if type == Hours.off_peak:
             df.loc[df['is_peak']== True,'mw'] = 0
-        
-        return HourProfile(profile=df , type=self.info['type'])
+        val_name = Values.mw
+        return HourProfile(profile=df[val_name] ,name_val=Values.mw ,type=self.info['type'])
 
     def get_mwh(self):
         profile = self.generateProfile()

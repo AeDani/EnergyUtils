@@ -1,11 +1,10 @@
-from asyncio import base_events
 from modules.profile import *
 from modules.hedging import *
 
 # File with different examples how to use Profile and Hedging Class
 
 # Profil erstellen
-evu25 = HourProfile.import_csv('Assets/evu-25.csv')
+evu25 = HourProfile.import_csv('Assets/evu-25.csv', name_val="12")
 # Stundentabelle Peak / off Peak erhalten
 print(evu25.get_hours_table())
 

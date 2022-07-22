@@ -1,11 +1,13 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+from modules.enums import Values
 
 class HourProfile:
     """Profile class stores any type of profile in hourly frequency"""
 
-    def __init__(self, profile: pd.DataFrame, type='initial'):
-        self.df_profile = profile
+    def __init__(self, profile: pd.Series, name_val:Values=Values.mw, type='initial', ):
+        self.name_val = name_val
+        self.df_profile = profile.to_frame(name=name_val)
         self.type = type
         self.__set_col_peak_hours()
         self.__set_col_year_quarter_month()
@@ -17,11 +19,11 @@ class HourProfile:
         return pd.date_range(start=start_datetime, end=end_datetime, freq='H', tz='Europe/Zurich')
 
     @staticmethod
-    def import_csv(file, sep=';'):
+    def import_csv(file, sep=';', name_val:Values=Values.mw):
         """Imports a profile from csv file of type timestamp(hourly), values - no header -
         this returns a profile object"""
         # import the data from csv
-        profile = pd.read_csv(file, sep=sep, header=None, names=['ts', 'mw'])
+        profile = pd.read_csv(file, sep=sep, header=None, names=['ts', name_val])
 
         # generate a datetime index based on the timestamp from csv
         start = profile.iloc[0][0]
@@ -32,7 +34,7 @@ class HourProfile:
         profile.drop(columns=['ts'], inplace=True)
         profile['ts'] = dtix
         profile.set_index('ts', inplace=True, drop=True)
-        return HourProfile(profile)
+        return HourProfile(profile=profile[name_val], name_val=name_val)
 
     def __set_col_peak_hours(self):
         def is_peak_hour(timestamp):
