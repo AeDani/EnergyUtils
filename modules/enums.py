@@ -11,4 +11,5 @@ class Products:
     m = 'Month'
 
 class Values:
-    mw = 'mw'
+    mw = 'mw',
+    chf = 'chf'
