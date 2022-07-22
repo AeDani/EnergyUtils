@@ -11,5 +11,10 @@ class Products:
     m = 'Month'
 
 class Values:
-    mw = 'mw',
+    mw = 'mw'
     chf = 'chf'
+
+class HedgeType:
+    quantity = 0
+    value = 1
+    

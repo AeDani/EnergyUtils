@@ -5,7 +5,7 @@ from modules.enums import Values
 class HourProfile:
     """Profile class stores any type of profile in hourly frequency"""
 
-    def __init__(self, profile: pd.Series, name_val:Values=Values.mw, type='initial', ):
+    def __init__(self, profile: pd.Series, name_val:Values=Values.mw, type='initial' ):
         self.name_val = name_val
         self.df_profile = profile.to_frame(name=name_val)
         self.type = type
@@ -55,7 +55,7 @@ class HourProfile:
         return pd.pivot_table(df, index=['quarter'], values=['is_peak', 'off_peak'], aggfunc='sum', margins = True, margins_name='Total')
     
     def get_sum_of_profile(self):
-        return self.df_profile['mw'].sum().round(3)
+        return self.df_profile[self.name_val].sum().round(3)
 
     def display_head(self):
         self.df_profile.head(15)
@@ -63,3 +63,12 @@ class HourProfile:
     def plot_profile(self):
         self.df_profile.plot(y='mw')
         plt.show()
+
+    def trim_date_to_other_hourProfile(self,other):
+        start = other.df_profile.index[0]
+        end = other.df_profile.index[-1]
+        self.df_profile = self.df_profile.loc[start:end]
+    
+    def profile_to_csv(self):
+        self.df_profile.to_csv('out.csv')
+
