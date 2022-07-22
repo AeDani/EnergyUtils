@@ -19,10 +19,10 @@ class TradingProduct():
             'mw' : mw,
         }
 
-    def change_type(self, type:Hours):
+    def set_type(self, type:Hours):
         self.info['type'] = type
 
-    def change_mw(self, mw:float):
+    def set_mw(self, mw:float):
         self.info['mw'] = mw
 
     def trading_product_minus_other(self, other):
