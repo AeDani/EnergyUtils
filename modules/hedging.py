@@ -192,4 +192,8 @@ class Hedging:
     def print_hedges(self):
         for trading_prod in self.hedge_products_list:
             print(trading_prod)
-            
+
+    def clear_previous_hedges(self):
+        self.hedge_product_selection = []
+        self.hedge_products_list = []
+        self.hedge_timeseries_df = []
