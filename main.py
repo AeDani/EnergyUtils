@@ -4,7 +4,7 @@ from modules.hedging import *
 # File with different examples how to use Profile and Hedging Class
 
 # Profil erstellen
-evu25 = HourProfile.import_csv('Assets/evu-25.csv', col_name='mw')
+evu25 = HourProfile.import_csv('Assets/evu-25.csv')
 # Stundentabelle Peak / off Peak erhalten
 print(evu25.get_hours_table())
 

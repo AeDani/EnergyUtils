@@ -7,15 +7,13 @@ from modules.hedging import *
 
 print(HourProfile)
 # Profil erstellen
-file = 'evu-25.csv'
+file = '1658481587013.csv'
 path = 'Assets/'
 file_path = f'{path}{file}'
 
-evu25 = HourProfile.import_csv(file_path, col_name='mw')
-# Stundentabelle Peak / off Peak erhalten
-print(evu25.get_hours_table())
+evu25 = HourProfile.import_csv(file_path)
 hedge = Hedging(evu25)
-
-hedge.combinations_of_quantity_hedge(base_product= Products.q)
+hedge.combinations_of_quantity_hedge(base_product= Products.cal, peak_product=Products.cal)
 hedge.print_hedges()
+hedge.print_all_mwh_of_residual()
 

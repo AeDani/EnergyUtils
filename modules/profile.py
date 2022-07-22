@@ -17,11 +17,11 @@ class HourProfile:
         return pd.date_range(start=start_datetime, end=end_datetime, freq='H', tz='Europe/Zurich')
 
     @staticmethod
-    def import_csv(file, col_name='val', sep=';'):
+    def import_csv(file, sep=';'):
         """Imports a profile from csv file of type timestamp(hourly), values - no header -
         this returns a profile object"""
         # import the data from csv
-        profile = pd.read_csv(file, sep=sep, header=None, names=['ts', col_name])
+        profile = pd.read_csv(file, sep=sep, header=None, names=['ts', 'mw'])
 
         # generate a datetime index based on the timestamp from csv
         start = profile.iloc[0][0]
@@ -51,6 +51,9 @@ class HourProfile:
         df = self.df_profile
         df['off_peak'] = ~df['is_peak']
         return pd.pivot_table(df, index=['quarter'], values=['is_peak', 'off_peak'], aggfunc='sum', margins = True, margins_name='Total')
+    
+    def get_sum_of_profile(self):
+        return self.df_profile['mw'].sum().round(3)
 
     def display_head(self):
         self.df_profile.head(15)
