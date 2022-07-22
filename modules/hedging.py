@@ -149,19 +149,6 @@ class Hedging:
                 start=group['start'].iloc[0].strftime('%Y-%m-%d %H:00'), 
                 end= group['end'].iloc[0].strftime('%Y-%m-%d %H:00')))
         return out_list
-        
-
-    @staticmethod
-    def __hedge_per_product_table(profile:pd.DataFrame, product:Products):
-        temp_df = profile.groupby('hedge_group')
-        temp_df.reset_index(inplace=True)
-        
-        if  product==Products.cal:
-            temp_df['hedge_group'] = temp_df['hedge_group'].apply(lambda x: x.strftime('%F'))
-        elif product==Products.q:
-            temp_df['hedge_group'] = temp_df['hedge_group'].apply(lambda x: x.strftime('%F-Q%q'))
-        
-        return temp_df[['hedge_group', 'hedge_mw', 'start', 'end']].round({'hedge_mw' : 4})
 
     def print_hedges(self):
         for hedge in self.hedge_products_list:

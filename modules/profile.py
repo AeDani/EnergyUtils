@@ -1,7 +1,5 @@
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
-
 
 class HourProfile:
     """Profile class stores any type of profile in hourly frequency"""
@@ -55,7 +53,7 @@ class HourProfile:
         return pd.pivot_table(df, index=['quarter'], values=['is_peak', 'off_peak'], aggfunc='sum', margins = True, margins_name='Total')
 
     def display_head(self):
-        self.df_profile.head()
+        self.df_profile.head(15)
 
     def plot_profile(self):
         self.df_profile.plot(y='mw')

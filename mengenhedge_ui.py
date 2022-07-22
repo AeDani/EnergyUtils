@@ -16,8 +16,6 @@ evu25 = HourProfile.import_csv(file_path, col_name='mw')
 print(evu25.get_hours_table())
 hedge = Hedging(evu25)
 
-a = hedge.combinations_of_quantity_hedge(base_product= Products.cal)
-for hedge in a:
-    print(hedge)
-    print(hedge.get_mwh())
+hedge.combinations_of_quantity_hedge(base_product= Products.q)
+hedge.print_hedges()
 

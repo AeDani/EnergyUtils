@@ -1,6 +1,7 @@
 import pandas as pd
 import json
 from modules.enums import *
+from modules.profile import HourProfile
 
 class TradingProduct():
     def __init__(self, type:Hours, start:str, end:str, mw:float):
@@ -37,13 +38,17 @@ class TradingProduct():
         if type == Hours.off_peak:
             df.loc[df['is_peak']== True,'mw'] = 0
         
-        return df
+        return HourProfile(profile=df , type=self.info['type'])
 
     def get_mwh(self):
-        return self.generateProfile()['mw'].sum().round(3)
+        profile = self.generateProfile()
+        return profile.df_profile['mw'].sum().round(3)
 
     def __str__(self) -> str:
         return json.dumps(self.info)
+
+    def __eq__(self, other):
+        return self.info == other.info
     
     @staticmethod
     def __is_peak_hour(timestamp):
