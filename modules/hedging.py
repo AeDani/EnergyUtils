@@ -69,41 +69,40 @@ class Hedging:
     def combinations_of_hedge(self, base_product:Products=Products.none, peak_product:Products=Products.none, hedge_type:HedgeType=HedgeType.quantity):
         hedges_list_combinations = []
 
-        if hedge_type == HedgeType.quantity:
-            # only base
-            if base_product and not peak_product:
-                hedges = self.__return_hedge_based_on_type(hedge_type=hedge_type, product=base_product, hour=Hours.base)
-                hedges_list_combinations.extend(hedges)
+        # only base
+        if base_product and not peak_product:
+            hedges = self.__return_hedge_based_on_type(hedge_type=hedge_type, product=base_product, hour=Hours.base)
+            hedges_list_combinations.extend(hedges)
 
-            # only peak
-            elif not base_product and peak_product:
-                hedges = self.__return_hedge_based_on_type(hedge_type=hedge_type, product=peak_product, hour=Hours.peak)
-                hedges_list_combinations.extend(hedges)
+        # only peak
+        elif not base_product and peak_product:
+            hedges = self.__return_hedge_based_on_type(hedge_type=hedge_type, product=peak_product, hour=Hours.peak)
+            hedges_list_combinations.extend(hedges)
 
-            # base and peak products
-            if base_product and peak_product:
-                # the base hedge is set to the off-peak quantity
-                hedges_base = self.__return_hedge_based_on_type(hedge_type=hedge_type, product=base_product, hour=Hours.off_peak)
-                for hedge in hedges_base:
-                    hedge.set_type(Hours.base) 
-                hedges_list_combinations.extend(hedges_base)
-    
-                # peak quantity calculation
-                hedges_peak = self.__return_hedge_based_on_type(hedge_type=hedge_type, product=peak_product, hour=Hours.peak)
+        # base and peak products
+        if base_product and peak_product:
+            # the base hedge is set to the off-peak quantity
+            hedges_base = self.__return_hedge_based_on_type(hedge_type=hedge_type, product=base_product, hour=Hours.off_peak)
+            for hedge in hedges_base:
+                hedge.set_type(Hours.base) 
+            hedges_list_combinations.extend(hedges_base)
 
-                for index, hedge_peak in enumerate(hedges_peak):
-                    # same duration of products i.e both cal or both q
-                    if base_product == peak_product:
-                    # substract base from peak hedge 
-                        hedge_peak.set_mw(hedge_peak.trading_product_minus_other(hedges_base[index]))
-                
-                
-                    # base in cal and peak in q 
-                    if base_product==Products.cal and peak_product==Products.q:
-                        # peak hedges are the calculated peak hedges minus the cal base hedge
-                        hedge_peak.set_mw(hedge_peak.trading_product_minus_other(hedges_base[0]))
+            # peak quantity calculation
+            hedges_peak = self.__return_hedge_based_on_type(hedge_type=hedge_type, product=peak_product, hour=Hours.peak)
 
-                hedges_list_combinations.extend(hedges_peak)
+            for index, hedge_peak in enumerate(hedges_peak):
+                # same duration of products i.e both cal or both q
+                if base_product == peak_product:
+                # substract base from peak hedge 
+                    hedge_peak.set_mw(hedge_peak.trading_product_minus_other(hedges_base[index]))
+            
+            
+                # base in cal and peak in q 
+                if base_product==Products.cal and peak_product==Products.q:
+                    # peak hedges are the calculated peak hedges minus the cal base hedge
+                    hedge_peak.set_mw(hedge_peak.trading_product_minus_other(hedges_base[0]))
+
+            hedges_list_combinations.extend(hedges_peak)
 
         return hedges_list_combinations
 
@@ -206,7 +205,7 @@ class Hedging:
             # value hedge
             hedges = self.calc_value_hedges(product=product, hour=hour)
         else:
-            raise AttributeError('HedgeType not implemented')
+            raise NotImplementedError('HedgeType not implemented')
         
         return hedges
 
