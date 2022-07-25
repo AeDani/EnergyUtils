@@ -15,5 +15,8 @@ profil_mw = HourProfile.import_csv(file_path)
 
 hedge = Hedging(profil_mw)
 hedge.add_price_curve(chmpk_chf)
-hedge.calc_value_hedges(product=Products.cal, hour=Hours.base)
+hedge.calc_value_hedges(product=Products.q, hour=Hours.off_peak)
 hedge.print_hedges()
+
+hedge.clear_previous_hedges()
+hedg

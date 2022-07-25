@@ -1,3 +1,4 @@
+from multiprocessing.sharedctypes import Value
 import numpy as np
 import pandas as pd
 
@@ -42,13 +43,69 @@ class Hedging:
         value_hour_profile = HourProfile(profile['chf'], name_val=Values.chf, type='value_profile')
 
         # calculate the average CHF value on base or peak and cal / q
-        average_chf_value = self.__get_averages_per_period(hour_profile=value_hour_profile, product=product, hour=hour)
+        average_chf_values = self.__get_averages_per_period(hour_profile=value_hour_profile, product=product, hour=hour)
 
         # calculate the average price of the price curve in CHF/MWh
-        average_market_price = self.__get_averages_per_period(hour_profile=self.price_curve, product=product, hour=hour)
+        average_market_prices = self.__get_averages_per_period(hour_profile=self.price_curve, product=product, hour=hour)
 
-        #TODO - divide average_chf_value by average_market_price to get value hedge MW
+        value_hedges = []
+        for idx, tp in enumerate(average_chf_values):
+            # divide the average chf value of each Trading Product by the market value price of the matching market product to get the value hedge MW
+            mw = (tp.info['mw']/average_market_prices[idx].info['mw']).round(2)
+            
+            value_hedges.append(TradingProduct(
+                type=tp.info['type'],
+                start=tp.info['start'],
+                end=tp.info['end'],
+                mw = mw
+                ))
         
+        # store hedges
+        self.hedge_products_list.extend(value_hedges)
+        
+        return value_hedges
+
+
+    def combinations_of_quantity_hedge(self, base_product:Products=Products.none, peak_product:Products=Products.none, hedge_type:HedgeType=HedgeType.quantity):
+        hedges_list_combinations = []
+
+        if hedge_type == HedgeType.quantity:
+            # only base
+            if base_product and not peak_product:
+                hedges = self.__return_hedge_based_on_type(hedge_type=hedge_type, product=base_product, hour=Hours.base)
+                hedges_list_combinations.extend(hedges)
+
+            # only peak
+            elif not base_product and peak_product:
+                hedges = self.__return_hedge_based_on_type(hedge_type=hedge_type, product=peak_product, hour=Hours.peak)
+                hedges_list_combinations.extend(hedges)
+
+            # base and peak products
+            if base_product and peak_product:
+                # the base hedge is set to the off-peak quantity
+                hedges_base = self.__return_hedge_based_on_type(hedge_type=hedge_type, product=base_product, hour=Hours.off_peak)
+                for hedge in hedges_base:
+                    hedge.set_type(Hours.base) 
+                hedges_list_combinations.extend(hedges_base)
+    
+                # peak quantity calculation
+                hedges_peak = self.__return_hedge_based_on_type(hedge_type=hedge_type, product=peak_product, hour=Hours.peak)
+
+                for index, hedge_peak in enumerate(hedges_peak):
+                    # same duration of products i.e both cal or both q
+                    if base_product == peak_product:
+                    # substract base from peak hedge 
+                        hedge_peak.set_mw(hedge_peak.trading_product_minus_other(hedges_base[index]))
+                
+                
+                    # base in cal and peak in q 
+                    if base_product==Products.cal and peak_product==Products.q:
+                        # peak hedges are the calculated peak hedges minus the cal base hedge
+                        hedge_peak.set_mw(hedge_peak.trading_product_minus_other(hedges_base[0]))
+
+                hedges_list_combinations.extend(hedges_peak)
+
+        return hedges_list_combinations
 
     def __get_averages_per_period(self, hour_profile:HourProfile, product=Products.cal, hour=Hours.base) -> list:
         """Calculate a the average on the profile - product eg. 'Cal' and hours eg. 'Peak' """
@@ -72,51 +129,10 @@ class Hedging:
         # create another column with 0 instead of nan, to better caclulate later
         profile['average_non_nan'] = profile['average'].fillna(0)
         
-        # return TadingProducts
+        # return TadingProducts - There is the rounding to two digigts
         hedges = self.to_list_of_trading_products(profile=profile, product=product, hour=hour)
-      
+        
         return hedges
-
-    def combinations_of_quantity_hedge(self, base_product:Products=Products.none, peak_product:Products=Products.none, hedge_type:HedgeType=HedgeType.quantity):
-        hedges_list_combinations = []
-
-        if hedge_type == HedgeType.quantity:
-            # only base
-            if base_product and not peak_product:
-                hedges = self.calc_quantity_hedges(product=base_product, hour=Hours.base)
-                hedges_list_combinations.extend(hedges)
-
-            # only peak
-            elif not base_product and peak_product:
-                hedges = self.calc_quantity_hedges(product=peak_product, hour=Hours.peak)
-                hedges_list_combinations.extend(hedges)
-
-            # base and peak products
-            if base_product and peak_product:
-                # the base hedge is set to the off-peak quantity
-                hedges_base = self.calc_quantity_hedges(product=base_product, hour=Hours.off_peak)
-                for hedge in hedges_base:
-                    hedge.set_type(Hours.base) 
-                hedges_list_combinations.extend(hedges_base)
-    
-                # peak quantity calculation
-                hedges_peak = self.calc_quantity_hedges(product=peak_product, hour=Hours.peak)
-
-                for index, hedge_peak in enumerate(hedges_peak):
-                    # same duration of products i.e both cal or both q
-                    if base_product == peak_product:
-                    # substract base from peak hedge 
-                        hedge_peak.set_mw(hedge_peak.trading_product_minus_other(hedges_base[index]))
-                
-                
-                    # base in cal and peak in q 
-                    if base_product==Products.cal and peak_product==Products.q:
-                        # peak hedges are the calculated peak hedges minus the cal base hedge
-                        hedge_peak.set_mw(hedge_peak.trading_product_minus_other(hedges_base[0]))
-
-                hedges_list_combinations.extend(hedges_peak)
-
-        return hedges_list_combinations
 
     @staticmethod
     def __hour_matcher(profile:pd.DataFrame, hour: Hours):
@@ -178,6 +194,21 @@ class Hedging:
                 start=group['start'].iloc[0].strftime('%Y-%m-%d %H:00'), 
                 end= group['end'].iloc[0].strftime('%Y-%m-%d %H:00')))
         return out_list
+
+    def __return_hedge_based_on_type(self, hedge_type:HedgeType, product:Products, hour:Hours):
+        
+        
+        if hedge_type == HedgeType.quantity:
+            # quantity hedge
+            hedges = self.calc_quantity_hedges(product=product, hour=hour)
+
+        elif hedge_type == HedgeType.value:
+            # value hedge
+            hedges = self.calc_value_hedges(product=product, hour=hour)
+        else:
+            raise AttributeError('HedgeType not implemented')
+        
+        return hedges
 
     def initial_profile_minus_all_hedges(self) -> tuple:
         """ 
