@@ -67,7 +67,12 @@ class HourProfile:
     def trim_date_to_other_hourProfile(self,other):
         start = other.df_profile.index[0]
         end = other.df_profile.index[-1]
-        self.df_profile = self.df_profile.loc[start:end]
+        trimmed_curve = self.df_profile.loc[start:end]
+
+        if len(trimmed_curve) != len(other.df_profile):
+            raise ValueError(f'The profiles dont have the same length. {self.type} {len(trimmed_curve)} vs. {other.type} {len(other.df_profile)}')
+
+        self.df_profile = trimmed_curve
     
     def profile_to_csv(self):
         self.df_profile.to_csv('out.csv')

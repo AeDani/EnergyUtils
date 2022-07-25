@@ -1,6 +1,10 @@
 from modules.enums import *
 from modules.fwcImporter import *
 from modules.hedging import Hedging
+import time
+start_time = time.time()
+
+
 
 # Price curve CHMPK
 file = 'Assets/20220715Sammlerexport.csv'
@@ -17,6 +21,8 @@ hedge = Hedging(profil_mw)
 hedge.add_price_curve(chmpk_chf)
 
 hedge.clear_previous_hedges()
-hedge.combinations_of_hedge(base_product=Products.cal, peak_product=Products.cal, hedge_type=HedgeType.quantity)
+hedge.combinations_of_hedge(base_product=Products.q, peak_product=Products.q, hedge_type=HedgeType.value)
 hedge.print_hedges()
 hedge.print_all_mwh_of_residual()
+
+print("--- %s seconds ---" % (time.time() - start_time))
