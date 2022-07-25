@@ -8,7 +8,7 @@ class TestHedgingCombinationsAllOnesProfile(unittest.TestCase):
     def setUp(self) -> None:
         self.test_profile = HourProfile.import_csv('Tests/all_ones.csv')
     
-    def dummy_test(self):
+    def test_dummy(self):
         self.assertEqual(sum([1,2,3]),6, "Should be 6")
     
     def test_base_cal_only(self):
