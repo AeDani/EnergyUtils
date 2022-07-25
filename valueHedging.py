@@ -19,4 +19,4 @@ hedge.calc_value_hedges(product=Products.q, hour=Hours.off_peak)
 hedge.print_hedges()
 
 hedge.clear_previous_hedges()
-hedg
+hedge.

@@ -66,7 +66,7 @@ class Hedging:
         return value_hedges
 
 
-    def combinations_of_quantity_hedge(self, base_product:Products=Products.none, peak_product:Products=Products.none, hedge_type:HedgeType=HedgeType.quantity):
+    def combinations_of_hedge(self, base_product:Products=Products.none, peak_product:Products=Products.none, hedge_type:HedgeType=HedgeType.quantity):
         hedges_list_combinations = []
 
         if hedge_type == HedgeType.quantity:

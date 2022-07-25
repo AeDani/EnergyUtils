@@ -15,14 +15,14 @@ class TestHedgingCombinationsAllOnesProfile(unittest.TestCase):
         hedges = [
             TradingProduct(type=Hours.base, start='2025-01-01 00:00', end='2025-12-31 23:00', mw=1)
         ]
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(base_product=Products.cal)
+        result = Hedging(self.test_profile).combinations_of_hedge(base_product=Products.cal)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
     def test_peak_cal_only(self):
         hedges = [
             TradingProduct(type=Hours.peak, start='2025-01-01 00:00', end='2025-12-31 23:00', mw=1)
         ]
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(peak_product=Products.cal)
+        result = Hedging(self.test_profile).combinations_of_hedge(peak_product=Products.cal)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
     def test_base_q_only(self):
@@ -32,7 +32,7 @@ class TestHedgingCombinationsAllOnesProfile(unittest.TestCase):
             TradingProduct(type=Hours.base, start='2025-07-01 00:00', end='2025-09-30 23:00', mw=1),
             TradingProduct(type=Hours.base, start='2025-10-01 00:00', end='2025-12-31 23:00', mw=1),
         ]
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(base_product=Products.q)
+        result = Hedging(self.test_profile).combinations_of_hedge(base_product=Products.q)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
     def test_peak_q_only(self):
@@ -42,7 +42,7 @@ class TestHedgingCombinationsAllOnesProfile(unittest.TestCase):
             TradingProduct(type=Hours.peak, start='2025-07-01 00:00', end='2025-09-30 23:00', mw=1),
             TradingProduct(type=Hours.peak, start='2025-10-01 00:00', end='2025-12-31 23:00', mw=1),
         ]
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(peak_product=Products.q)
+        result = Hedging(self.test_profile).combinations_of_hedge(peak_product=Products.q)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
     def test_base_peak_cal(self):
@@ -50,7 +50,7 @@ class TestHedgingCombinationsAllOnesProfile(unittest.TestCase):
             TradingProduct(type=Hours.base, start='2025-01-01 00:00', end='2025-12-31 23:00', mw=1),
             TradingProduct(type=Hours.peak, start='2025-01-01 00:00', end='2025-12-31 23:00', mw=0)
         ]
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(base_product = Products.cal, peak_product=Products.cal)
+        result = Hedging(self.test_profile).combinations_of_hedge(base_product = Products.cal, peak_product=Products.cal)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
     def test_base_peak_q(self):
@@ -64,7 +64,7 @@ class TestHedgingCombinationsAllOnesProfile(unittest.TestCase):
             TradingProduct(type=Hours.peak, start='2025-07-01 00:00', end='2025-09-30 23:00', mw=0),
             TradingProduct(type=Hours.peak, start='2025-10-01 00:00', end='2025-12-31 23:00', mw=0),
         ]
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(base_product = Products.q, peak_product=Products.q)
+        result = Hedging(self.test_profile).combinations_of_hedge(base_product = Products.q, peak_product=Products.q)
         self.assertEqual(result,hedges, "Wrong hedge output")
     
     def test_base_cal_peak_q(self):
@@ -75,7 +75,7 @@ class TestHedgingCombinationsAllOnesProfile(unittest.TestCase):
             TradingProduct(type=Hours.peak, start='2025-07-01 00:00', end='2025-09-30 23:00', mw=0),
             TradingProduct(type=Hours.peak, start='2025-10-01 00:00', end='2025-12-31 23:00', mw=0),
         ]
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(base_product = Products.cal, peak_product=Products.q)
+        result = Hedging(self.test_profile).combinations_of_hedge(base_product = Products.cal, peak_product=Products.q)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
 
@@ -91,14 +91,14 @@ class TestHedgingCombinationsBaseProfilEachQuarter(unittest.TestCase):
         hedges = [
             TradingProduct(type=Hours.base, start='2025-01-01 00:00', end='2025-12-31 23:00', mw=2.51)
         ]  
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(base_product=Products.cal)
+        result = Hedging(self.test_profile).combinations_of_hedge(base_product=Products.cal)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
     def test_peak_cal_only(self):
         hedges = [
             TradingProduct(type=Hours.peak, start='2025-01-01 00:00', end='2025-12-31 23:00', mw=2.51)
         ]
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(peak_product=Products.cal)
+        result = Hedging(self.test_profile).combinations_of_hedge(peak_product=Products.cal)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
     def test_base_q_only(self):
@@ -108,7 +108,7 @@ class TestHedgingCombinationsBaseProfilEachQuarter(unittest.TestCase):
             TradingProduct(type=Hours.base, start='2025-07-01 00:00', end='2025-09-30 23:00', mw=3),
             TradingProduct(type=Hours.base, start='2025-10-01 00:00', end='2025-12-31 23:00', mw=4),
         ]
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(base_product=Products.q)
+        result = Hedging(self.test_profile).combinations_of_hedge(base_product=Products.q)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
     def test_peak_q_only(self):
@@ -118,7 +118,7 @@ class TestHedgingCombinationsBaseProfilEachQuarter(unittest.TestCase):
             TradingProduct(type=Hours.peak, start='2025-07-01 00:00', end='2025-09-30 23:00', mw=3),
             TradingProduct(type=Hours.peak, start='2025-10-01 00:00', end='2025-12-31 23:00', mw=4)
         ]
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(peak_product=Products.q)
+        result = Hedging(self.test_profile).combinations_of_hedge(peak_product=Products.q)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
     def test_base_peak_cal(self):
@@ -130,7 +130,7 @@ class TestHedgingCombinationsBaseProfilEachQuarter(unittest.TestCase):
             TradingProduct(type=Hours.base, start='2025-01-01 00:00', end='2025-12-31 23:00', mw=2.51),
             TradingProduct(type=Hours.peak, start='2025-01-01 00:00', end='2025-12-31 23:00', mw=0.00),
         ]
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(base_product = Products.cal, peak_product=Products.cal)
+        result = Hedging(self.test_profile).combinations_of_hedge(base_product = Products.cal, peak_product=Products.cal)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
     def test_base_peak_q(self):
@@ -144,7 +144,7 @@ class TestHedgingCombinationsBaseProfilEachQuarter(unittest.TestCase):
             TradingProduct(type=Hours.peak, start='2025-07-01 00:00', end='2025-09-30 23:00', mw=0),
             TradingProduct(type=Hours.peak, start='2025-10-01 00:00', end='2025-12-31 23:00', mw=0),
         ]
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(base_product = Products.q, peak_product=Products.q)
+        result = Hedging(self.test_profile).combinations_of_hedge(base_product = Products.q, peak_product=Products.q)
         self.assertEqual(result,hedges, "Wrong hedge output")
     
     def test_base_cal_peak_q(self):
@@ -155,7 +155,7 @@ class TestHedgingCombinationsBaseProfilEachQuarter(unittest.TestCase):
             TradingProduct(type=Hours.peak, start='2025-07-01 00:00', end='2025-09-30 23:00', mw=0.49),
             TradingProduct(type=Hours.peak, start='2025-10-01 00:00', end='2025-12-31 23:00', mw=1.49),
         ]  
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(base_product = Products.cal, peak_product=Products.q)
+        result = Hedging(self.test_profile).combinations_of_hedge(base_product = Products.cal, peak_product=Products.q)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
 
@@ -170,14 +170,14 @@ class TestHedgingCombinationsBasePeakProfil(unittest.TestCase):
         hedges = [
             TradingProduct(type=Hours.base, start='2025-01-01 00:00', end='2025-12-31 23:00', mw=6.09)
         ]  
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(base_product=Products.cal)
+        result = Hedging(self.test_profile).combinations_of_hedge(base_product=Products.cal)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
     def test_peak_cal_only(self):
         hedges = [
             TradingProduct(type=Hours.peak, start='2025-01-01 00:00', end='2025-12-31 23:00', mw=12.51)
         ]  
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(peak_product=Products.cal)
+        result = Hedging(self.test_profile).combinations_of_hedge(peak_product=Products.cal)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
     def test_base_q_only(self):
@@ -187,7 +187,7 @@ class TestHedgingCombinationsBasePeakProfil(unittest.TestCase):
             TradingProduct(type=Hours.base, start='2025-07-01 00:00', end='2025-09-30 23:00', mw=6.59),
             TradingProduct(type=Hours.base, start='2025-10-01 00:00', end='2025-12-31 23:00', mw=7.59),
         ]
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(base_product=Products.q)
+        result = Hedging(self.test_profile).combinations_of_hedge(base_product=Products.q)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
     def test_peak_q_only(self):
@@ -197,7 +197,7 @@ class TestHedgingCombinationsBasePeakProfil(unittest.TestCase):
             TradingProduct(type=Hours.peak, start='2025-07-01 00:00', end='2025-09-30 23:00', mw=13),
             TradingProduct(type=Hours.peak, start='2025-10-01 00:00', end='2025-12-31 23:00', mw=14),
         ]
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(peak_product=Products.q)
+        result = Hedging(self.test_profile).combinations_of_hedge(peak_product=Products.q)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
     def test_base_peak_cal(self):
@@ -209,7 +209,7 @@ class TestHedgingCombinationsBasePeakProfil(unittest.TestCase):
             TradingProduct(type=Hours.base, start='2025-01-01 00:00', end='2025-12-31 23:00', mw=2.51),
             TradingProduct(type=Hours.peak, start='2025-01-01 00:00', end='2025-12-31 23:00', mw=10.00)
         ]
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(base_product = Products.cal, peak_product=Products.cal)
+        result = Hedging(self.test_profile).combinations_of_hedge(base_product = Products.cal, peak_product=Products.cal)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
     def test_base_peak_q(self): 
@@ -223,7 +223,7 @@ class TestHedgingCombinationsBasePeakProfil(unittest.TestCase):
             TradingProduct(type=Hours.peak, start='2025-07-01 00:00', end='2025-09-30 23:00', mw=10),
             TradingProduct(type=Hours.peak, start='2025-10-01 00:00', end='2025-12-31 23:00', mw=10),
         ]
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(base_product = Products.q, peak_product=Products.q)
+        result = Hedging(self.test_profile).combinations_of_hedge(base_product = Products.q, peak_product=Products.q)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
     def test_base_cal_peak_q(self):
@@ -238,7 +238,7 @@ class TestHedgingCombinationsBasePeakProfil(unittest.TestCase):
             TradingProduct(type=Hours.peak, start='2025-07-01 00:00', end='2025-09-30 23:00', mw=10.49),
             TradingProduct(type=Hours.peak, start='2025-10-01 00:00', end='2025-12-31 23:00', mw=11.49),
         ] 
-        result = Hedging(self.test_profile).combinations_of_quantity_hedge(base_product = Products.cal, peak_product=Products.q)
+        result = Hedging(self.test_profile).combinations_of_hedge(base_product = Products.cal, peak_product=Products.q)
         self.assertEqual(result,hedges, "Wrong hedge output")
 
 

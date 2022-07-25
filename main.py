@@ -18,6 +18,6 @@ hedge.print_hedges()
 
 ##--- Hedge Combinations
 hedge.clear_previous_hedges()
-hedge.combinations_of_quantity_hedge(base_product=Products.cal, peak_product=Products.cal)
+hedge.combinations_of_hedge(base_product=Products.cal, peak_product=Products.cal)
 hedge.print_hedges()
 hedge.print_all_mwh_of_residual()
