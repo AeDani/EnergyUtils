@@ -51,8 +51,9 @@ class Hedging:
         value_hedges = []
         for idx, tp in enumerate(average_chf_values):
             # divide the average chf value of each Trading Product by the market value price of the matching market product to get the value hedge MW
-            mw = (tp.info['mw']/average_market_prices[idx].info['mw']).round(2)
+            mw = tp.trading_product_divided_other(average_market_prices[idx])
             
+            # create the new value hedge TradingProduct
             value_hedges.append(TradingProduct(
                 type=tp.info['type'],
                 start=tp.info['start'],
@@ -105,6 +106,58 @@ class Hedging:
             hedges_list_combinations.extend(hedges_peak)
 
         return hedges_list_combinations
+
+    def initial_profile_minus_all_hedges(self) -> tuple:
+        """ 
+        returns an tupple of HourProfile of calculated as the initial profile minus all hedges.
+        first element: profile with positive and negative values
+        second element: the profile with the positiv values
+        third element: the negative values of the profile transformed to positiv values  
+        """
+        
+        list_of_df = []
+        for trading_product in self.hedge_products_list:
+            list_of_df.append(trading_product.generateProfile().df_profile)
+            concated = pd.concat(list_of_df, axis=1)
+        
+        if len(self.hedge_products_list) >1:
+            summed_hedge_profile = concated['mw'].sum(axis=1)
+        else:
+            summed_hedge_profile = concated['mw']
+
+        res = (self.initial_hourProfile.df_profile['mw'] - summed_hedge_profile).to_frame(name='mw')
+        pos = res['mw'] > 0
+        
+        res['pos'] = res['mw']
+        res['pos'].loc[~pos] = 0
+        
+        res['neg'] = res['mw']
+        res['neg'].loc[pos] = 0
+        res['neg'] = res['neg'].abs()
+
+        return (
+            HourProfile(profile=res['mw'], name_val=Values.mw, type='residual_all'),
+            HourProfile(profile=res['pos'], name_val=Values.mw, type='residual_pos'),
+            HourProfile(profile=res['neg'], name_val=Values.mw, type='residual_neg'),
+        )
+
+    def print_all_mwh_of_residual(self):
+        res_profiles = self.initial_profile_minus_all_hedges()
+        for pro in res_profiles:
+            print(f'{pro.type} with {pro.get_sum_of_profile()} Mwh')
+
+    def print_hedges(self):
+        for trading_prod in self.hedge_products_list:
+            print(trading_prod)
+
+    def clear_previous_hedges(self):
+        self.hedge_product_selection = []
+        self.hedge_products_list = []
+        self.hedge_timeseries_df = []
+
+    def add_price_curve(self, price_curve:HourProfile):
+        price_curve.trim_date_to_other_hourProfile(self.initial_hourProfile)
+        self.price_curve = price_curve
 
     def __get_averages_per_period(self, hour_profile:HourProfile, product=Products.cal, hour=Hours.base) -> list:
         """Calculate a the average on the profile - product eg. 'Cal' and hours eg. 'Peak' """
@@ -209,61 +262,9 @@ class Hedging:
         
         return hedges
 
-    def initial_profile_minus_all_hedges(self) -> tuple:
-        """ 
-        returns an tupple of HourProfile of calculated as the initial profile minus all hedges.
-        first element: profile with positive and negative values
-        second element: the profile with the positiv values
-        third element: the negative values of the profile transformed to positiv values  
-        """
-        
-        list_of_df = []
-        for trading_product in self.hedge_products_list:
-            list_of_df.append(trading_product.generateProfile().df_profile)
-            concated = pd.concat(list_of_df, axis=1)
-        
-        if len(self.hedge_products_list) >1:
-            summed_hedge_profile = concated['mw'].sum(axis=1)
-        else:
-            summed_hedge_profile = concated['mw']
-
-        res = (self.initial_hourProfile.df_profile['mw'] - summed_hedge_profile).to_frame(name='mw')
-        pos = res['mw'] > 0
-        
-        res['pos'] = res['mw']
-        res['pos'].loc[~pos] = 0
-        
-        res['neg'] = res['mw']
-        res['neg'].loc[pos] = 0
-        res['neg'] = res['neg'].abs()
-
-        return (
-            HourProfile(profile=res['mw'], name_val=Values.mw, type='residual_all'),
-            HourProfile(profile=res['pos'], name_val=Values.mw, type='residual_pos'),
-            HourProfile(profile=res['neg'], name_val=Values.mw, type='residual_neg'),
-        )
-
-    def print_all_mwh_of_residual(self):
-        res_profiles = self.initial_profile_minus_all_hedges()
-        for pro in res_profiles:
-            print(f'{pro.type} with {pro.get_sum_of_profile()} Mwh')
-
-    def print_hedges(self):
-        for trading_prod in self.hedge_products_list:
-            print(trading_prod)
-
-    def clear_previous_hedges(self):
-        self.hedge_product_selection = []
-        self.hedge_products_list = []
-        self.hedge_timeseries_df = []
-
     def __rename_val_col_to_mw(self):
         rename = {
             self.initial_hourProfile.name_val : 'mw'
         }
         self.initial_hourProfile.df_profile.rename(columns=rename, inplace=True)
         self.initial_hourProfile.name_val = 'mw'
-
-    def add_price_curve(self, price_curve:HourProfile):
-        price_curve.trim_date_to_other_hourProfile(self.initial_hourProfile)
-        self.price_curve = price_curve
