@@ -33,9 +33,9 @@ class TradingProduct():
         df = ts.to_series(name='is_peak').apply(self.__is_peak_hour).astype('bool').to_frame()
         df['mw'] = self.info['mw']
         
-        if type == Hours.peak:
+        if self.info['type'] == Hours.peak:
             df.loc[df['is_peak']== False,'mw'] = 0
-        if type == Hours.off_peak:
+        if self.info['type'] == Hours.off_peak:
             df.loc[df['is_peak']== True,'mw'] = 0
         val_name = Values.mw
         return HourProfile(profile=df[val_name] ,name_val=Values.mw ,type=self.info['type'])
