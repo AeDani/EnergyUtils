@@ -16,7 +16,7 @@ class TradingProduct():
             'type': type,
             'start': start,
             'end': end,
-            'mw' : mw,
+            'mw' : mw
         }
 
     def set_type(self, type:Hours):
@@ -46,6 +46,10 @@ class TradingProduct():
     def get_mwh(self):
         profile = self.generateProfile()
         return profile.df_profile['mw'].sum().round(3)
+
+    def get_hours(self):
+        profile = self.generateProfile()
+        return profile.get_hours_table()
 
     def __str__(self) -> str:
         out = self.info

@@ -159,6 +159,21 @@ class Hedging:
         price_curve.trim_date_to_other_hourProfile(self.initial_hourProfile)
         self.price_curve = price_curve
 
+    def to_list_of_trading_products(self, profile:pd.DataFrame, product:Products, hour:Hours):
+        # profile DF gruppieren und aus den einzelnen Gruppen ein Hedge object herstellen
+        temp_df_grouped = profile.groupby('hedge_group')
+        
+        out_list = []
+
+        for name, group in temp_df_grouped:
+
+            out_list.append(TradingProduct(
+                type=hour, 
+                mw=group['average'].mean().round(2), # round to 2 digits 
+                start=group['start'].iloc[0].strftime('%Y-%m-%d %H:00'), 
+                end= group['end'].iloc[0].strftime('%Y-%m-%d %H:00')))
+        return out_list
+
     def __get_averages_per_period(self, hour_profile:HourProfile, product=Products.cal, hour=Hours.base) -> list:
         """Calculate a the average on the profile - product eg. 'Cal' and hours eg. 'Peak' """
 
@@ -230,22 +245,6 @@ class Hedging:
     def __calc_residual_profile(profile:pd.DataFrame):
         profile['residual'] = profile['mw'] - profile['average_non_nan']
         return profile
-
-
-    def to_list_of_trading_products(self, profile:pd.DataFrame, product:Products, hour:Hours):
-        # profile DF gruppieren und aus den einzelnen Gruppen ein Hedge object herstellen
-        temp_df_grouped = profile.groupby('hedge_group')
-        
-        out_list = []
-
-        for name, group in temp_df_grouped:
-
-            out_list.append(TradingProduct(
-                type=hour, 
-                mw=group['average'].mean().round(2), # round to 2 digits 
-                start=group['start'].iloc[0].strftime('%Y-%m-%d %H:00'), 
-                end= group['end'].iloc[0].strftime('%Y-%m-%d %H:00')))
-        return out_list
 
     def __return_hedge_based_on_type(self, hedge_type:HedgeType, product:Products, hour:Hours):
         
